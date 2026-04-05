@@ -28,19 +28,21 @@ app.post('/upload', upload.single('file'), (req, res) => {
   res.json({ url: `/uploads/${req.file.filename}`, name: req.file.originalname });
 });
 
-// База данных в памяти (при перезапуске сервера данные сохраняются в файлы)
-let users = new Map(); // socketId -> { username, color, bio }
+// ========== БАЗА ДАННЫХ ==========
+let users = new Map(); // socketId -> { username, color, bio, avatar }
 let userSockets = new Map(); // username -> socketId
+let userData = new Map(); // username -> { bio, color, avatar, registeredAt }
 let offlineMessages = new Map(); // username -> [сообщения]
-let chats = new Map(); // chatId -> { participants, messages, createdAt }
+let chats = new Map(); // chatId -> { type, name, participants, messages, createdAt, avatar }
 
-// Загрузка данных из файлов
+// Загрузка данных
 function loadData() {
   try {
     if (fs.existsSync('data.json')) {
       const data = JSON.parse(fs.readFileSync('data.json', 'utf8'));
       if (data.chats) chats = new Map(Object.entries(data.chats));
       if (data.offlineMessages) offlineMessages = new Map(Object.entries(data.offlineMessages));
+      if (data.userData) userData = new Map(Object.entries(data.userData));
       console.log('Данные загружены');
     }
   } catch(e) { console.log('Нет сохранённых данных'); }
@@ -49,24 +51,62 @@ function loadData() {
 function saveData() {
   const data = {
     chats: Object.fromEntries(chats),
-    offlineMessages: Object.fromEntries(offlineMessages)
+    offlineMessages: Object.fromEntries(offlineMessages),
+    userData: Object.fromEntries(userData)
   };
   fs.writeFileSync('data.json', JSON.stringify(data, null, 2));
 }
 
-// Создание или получение личного чата
+// Генерация ID чата
+function generateChatId() {
+  return Date.now().toString(36) + Math.random().toString(36).substr(2);
+}
+
+// Создание личного чата (автоматически)
 function getOrCreatePrivateChat(user1, user2) {
   const chatKey = [user1, user2].sort().join('_');
   if (!chats.has(chatKey)) {
     chats.set(chatKey, {
       id: chatKey,
+      type: 'private',
+      name: null,
       participants: [user1, user2],
       messages: [],
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      avatar: null
     });
     saveData();
   }
   return chats.get(chatKey);
+}
+
+// Создание группового чата
+function createGroupChat(name, creator, participants) {
+  const chatId = generateChatId();
+  const uniqueParticipants = [...new Set([creator, ...participants])];
+  chats.set(chatId, {
+    id: chatId,
+    type: 'group',
+    name: name,
+    participants: uniqueParticipants,
+    messages: [],
+    createdAt: new Date().toISOString(),
+    createdBy: creator,
+    avatar: null
+  });
+  saveData();
+  return chats.get(chatId);
+}
+
+// Добавление участника в группу
+function addParticipantToGroup(chatId, username) {
+  const chat = chats.get(chatId);
+  if (chat && chat.type === 'group' && !chat.participants.includes(username)) {
+    chat.participants.push(username);
+    saveData();
+    return true;
+  }
+  return false;
 }
 
 // Отправка офлайн сообщений
@@ -85,12 +125,17 @@ io.on('connection', (socket) => {
   console.log('User connected:', socket.id);
 
   socket.on('register', (data) => {
-    const { username, color, bio } = data;
-    users.set(socket.id, { username, color, bio: bio || '' });
+    const { username, color, bio, avatar } = data;
+    users.set(socket.id, { username, color, bio: bio || '', avatar: avatar || '' });
     userSockets.set(username, socket.id);
     
-    // Отправляем список всех пользователей (которые когда-либо заходили)
-    const allUsers = Array.from(new Set([...Array.from(userSockets.keys()), ...Array.from(offlineMessages.keys())]));
+    if (!userData.has(username)) {
+      userData.set(username, { bio: bio || '', color: color, avatar: avatar || '', registeredAt: new Date().toISOString() });
+      saveData();
+    }
+    
+    // Отправляем список всех пользователей
+    const allUsers = Array.from(userData.keys());
     socket.emit('all_users', allUsers);
     
     // Отправляем список онлайн
@@ -98,24 +143,25 @@ io.on('connection', (socket) => {
     io.emit('online_users', onlineUsers);
     
     // Отправляем историю общих сообщений
-    const publicMessages = [];
-    for (const chat of chats.values()) {
-      if (chat.participants.includes('all')) {
-        publicMessages.push(...chat.messages);
-      }
+    const publicChat = chats.get('public');
+    if (publicChat) {
+      socket.emit('history', publicChat.messages);
+    } else {
+      socket.emit('history', []);
     }
-    socket.emit('history', publicMessages);
     
     // Отправляем список чатов пользователя
     const userChats = [];
     for (const [chatId, chat] of chats) {
-      if (chat.participants.includes(username) && !chat.participants.includes('all')) {
-        const otherUser = chat.participants.find(p => p !== username);
+      if (chat.participants.includes(username)) {
         userChats.push({
           id: chatId,
-          with: otherUser,
+          type: chat.type,
+          name: chat.type === 'group' ? chat.name : chat.participants.find(p => p !== username),
+          participants: chat.participants,
           lastMessage: chat.messages[chat.messages.length - 1],
-          createdAt: chat.createdAt
+          createdAt: chat.createdAt,
+          avatar: chat.avatar
         });
       }
     }
@@ -126,7 +172,6 @@ io.on('connection', (socket) => {
     
     // Уведомление о входе
     socket.broadcast.emit('user_joined', `${username} присоединился`);
-    saveData();
   });
 
   // Отправка сообщения
@@ -137,91 +182,164 @@ io.on('connection', (socket) => {
     const message = {
       id: Date.now(),
       from: user.username,
-      to: data.to || 'all',
+      chatId: data.chatId,
       text: data.text || '',
       files: data.files || [],
       time: data.time || new Date().toLocaleTimeString(),
-      isPrivate: data.to && data.to !== 'all'
+      type: data.type || 'text'
     };
     
-    if (message.isPrivate && data.to) {
-      // Личное сообщение
-      const chat = getOrCreatePrivateChat(user.username, data.to);
-      chat.messages.push(message);
-      saveData();
-      
-      const targetSocketId = userSockets.get(data.to);
+    const chat = chats.get(data.chatId);
+    if (!chat) return;
+    
+    chat.messages.push(message);
+    saveData();
+    
+    // Отправляем сообщение всем участникам чата
+    chat.participants.forEach(participant => {
+      const targetSocketId = userSockets.get(participant);
       if (targetSocketId) {
-        io.to(targetSocketId).emit('private_message', message);
-        io.to(targetSocketId).emit('new_chat', { with: user.username });
-      } else {
-        // Пользователь офлайн - сохраняем сообщение
-        if (!offlineMessages.has(data.to)) {
-          offlineMessages.set(data.to, []);
+        io.to(targetSocketId).emit('new_message', { chatId: data.chatId, message: message });
+      } else if (participant !== user.username) {
+        // Сохраняем офлайн сообщение
+        if (!offlineMessages.has(participant)) {
+          offlineMessages.set(participant, []);
         }
-        offlineMessages.get(data.to).push(message);
+        offlineMessages.get(participant).push({ chatId: data.chatId, message: message });
         saveData();
       }
-      socket.emit('private_message', message);
-      socket.emit('new_chat', { with: data.to });
-      
-      // Обновляем список чатов у обоих
-      const senderChats = [];
-      const receiverChats = [];
-      for (const [chatId, ch] of chats) {
-        if (ch.participants.includes(user.username) && !ch.participants.includes('all')) {
-          const otherUser = ch.participants.find(p => p !== user.username);
-          senderChats.push({ id: chatId, with: otherUser, lastMessage: ch.messages[ch.messages.length - 1] });
-        }
-        if (ch.participants.includes(data.to) && !ch.participants.includes('all')) {
-          const otherUser = ch.participants.find(p => p !== data.to);
-          receiverChats.push({ id: chatId, with: otherUser, lastMessage: ch.messages[ch.messages.length - 1] });
-        }
-      }
-      socket.emit('chats_list', senderChats);
+    });
+    
+    // Обновляем список чатов у всех участников
+    chat.participants.forEach(participant => {
+      const targetSocketId = userSockets.get(participant);
       if (targetSocketId) {
-        io.to(targetSocketId).emit('chats_list', receiverChats);
+        const updatedChats = [];
+        for (const [chatId, ch] of chats) {
+          if (ch.participants.includes(participant)) {
+            updatedChats.push({
+              id: chatId,
+              type: ch.type,
+              name: ch.type === 'group' ? ch.name : ch.participants.find(p => p !== participant),
+              participants: ch.participants,
+              lastMessage: ch.messages[ch.messages.length - 1],
+              createdAt: ch.createdAt
+            });
+          }
+        }
+        io.to(targetSocketId).emit('chats_list', updatedChats);
       }
-    } else {
-      // Общее сообщение
-      let publicChat = chats.get('all');
-      if (!publicChat) {
-        publicChat = { id: 'all', participants: ['all'], messages: [], createdAt: new Date().toISOString() };
-        chats.set('all', publicChat);
-      }
-      publicChat.messages.push(message);
-      saveData();
-      io.emit('message', message);
-    }
+    });
   });
 
-  // Получение истории личного чата
-  socket.on('get_chat_history', (targetUser) => {
+  // Получение истории чата
+  socket.on('get_chat_history', (chatId) => {
     const user = users.get(socket.id);
     if (!user) return;
     
-    const chat = getOrCreatePrivateChat(user.username, targetUser);
-    socket.emit('chat_history', { targetUser, messages: chat.messages });
+    const chat = chats.get(chatId);
+    if (chat && chat.participants.includes(user.username)) {
+      socket.emit('chat_history', { chatId: chatId, messages: chat.messages, chatInfo: chat });
+    }
   });
 
-  // Создание нового чата
-  socket.on('create_chat', (targetUser) => {
+  // Создание группового чата
+  socket.on('create_group', (data) => {
     const user = users.get(socket.id);
-    if (!user || targetUser === user.username) return;
+    if (!user) return;
     
-    const chat = getOrCreatePrivateChat(user.username, targetUser);
-    socket.emit('chat_created', { with: targetUser });
+    const { name, participants } = data;
+    const chat = createGroupChat(name, user.username, participants);
     
-    // Обновляем список чатов
-    const userChats = [];
-    for (const [chatId, ch] of chats) {
-      if (ch.participants.includes(user.username) && !ch.participants.includes('all')) {
-        const otherUser = ch.participants.find(p => p !== user.username);
-        userChats.push({ id: chatId, with: otherUser, lastMessage: ch.messages[ch.messages.length - 1] });
+    // Уведомляем всех участников
+    chat.participants.forEach(participant => {
+      const targetSocketId = userSockets.get(participant);
+      if (targetSocketId) {
+        const updatedChats = [];
+        for (const [chatId, ch] of chats) {
+          if (ch.participants.includes(participant)) {
+            updatedChats.push({
+              id: chatId,
+              type: ch.type,
+              name: ch.type === 'group' ? ch.name : ch.participants.find(p => p !== participant),
+              participants: ch.participants,
+              lastMessage: ch.messages[ch.messages.length - 1],
+              createdAt: ch.createdAt
+            });
+          }
+        }
+        io.to(targetSocketId).emit('chats_list', updatedChats);
+        io.to(targetSocketId).emit('group_created', { chatId: chat.id, name: chat.name });
+      }
+    });
+    
+    socket.emit('group_created', { chatId: chat.id, name: chat.name });
+  });
+
+  // Добавление участника в группу
+  socket.on('add_to_group', (data) => {
+    const user = users.get(socket.id);
+    if (!user) return;
+    
+    const { chatId, username } = data;
+    const chat = chats.get(chatId);
+    
+    if (chat && chat.type === 'group' && chat.participants.includes(user.username)) {
+      if (addParticipantToGroup(chatId, username)) {
+        // Уведомляем нового участника
+        const newUserSocket = userSockets.get(username);
+        if (newUserSocket) {
+          const updatedChats = [];
+          for (const [chatId, ch] of chats) {
+            if (ch.participants.includes(username)) {
+              updatedChats.push({
+                id: chatId,
+                type: ch.type,
+                name: ch.type === 'group' ? ch.name : ch.participants.find(p => p !== username),
+                participants: ch.participants,
+                lastMessage: ch.messages[ch.messages.length - 1],
+                createdAt: ch.createdAt
+              });
+            }
+          }
+          io.to(newUserSocket).emit('chats_list', updatedChats);
+          io.to(newUserSocket).emit('added_to_group', { chatId: chatId, groupName: chat.name });
+        }
+        
+        // Уведомляем всех участников
+        chat.participants.forEach(participant => {
+          const targetSocketId = userSockets.get(participant);
+          if (targetSocketId) {
+            io.to(targetSocketId).emit('group_member_added', { chatId: chatId, username: username });
+          }
+        });
       }
     }
-    socket.emit('chats_list', userChats);
   });
+
+  // Получение списка участников чата
+  socket.on('get_chat_participants', (chatId) => {
+    const user = users.get(socket.id);
+    if (!user) return;
+    
+    const chat = chats.get(chatId);
+    if (chat && chat.participants.includes(user.username)) {
+      socket.emit('chat_participants', { chatId: chatId, participants: chat.participants });
+    }
+  });
+
+  // Создание публичного чата (если нет)
+  if (!chats.has('public')) {
+    chats.set('public', {
+      id: 'public',
+      type: 'public',
+      name: 'Общий чат',
+      participants: [],
+      messages: [],
+      createdAt: new Date().toISOString()
+    });
+    saveData();
+  }
 
   socket.on('disconnect', () => {
     const user = users.get(socket.id);
@@ -237,6 +355,20 @@ io.on('connection', (socket) => {
 });
 
 loadData();
+
+// Создание публичного чата при старте
+if (!chats.has('public')) {
+  chats.set('public', {
+    id: 'public',
+    type: 'public',
+    name: 'Общий чат',
+    participants: [],
+    messages: [],
+    createdAt: new Date().toISOString()
+  });
+  saveData();
+}
+
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`Сервер запущен на http://localhost:${PORT}`);
