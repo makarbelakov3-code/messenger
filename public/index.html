@@ -16,120 +16,166 @@
             background: #0f0f1a;
             height: 100vh;
             overflow: hidden;
-            position: fixed;
             width: 100%;
         }
 
-        /* Основной контейнер */
-        .app-container {
+        /* Контейнер для ПК */
+        .desktop-layout {
             display: flex;
             height: 100%;
             width: 100%;
-            position: relative;
         }
 
-        /* Боковая панель - десктопная версия */
-        .sidebar {
-            width: 320px;
+        /* Боковая панель для ПК */
+        .desktop-sidebar {
+            width: 300px;
             background: #1a1a2e;
             border-right: 1px solid #2a2a3e;
             display: flex;
             flex-direction: column;
             flex-shrink: 0;
-            transition: transform 0.3s ease;
-            z-index: 20;
         }
 
-        /* Мобильное меню (выдвижное) */
-        .mobile-menu-overlay {
+        .desktop-chat {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #0f0f1a;
+            min-width: 0;
+        }
+
+        /* Мобильный layout (скрыт на ПК) */
+        .mobile-layout {
             display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.7);
-            z-index: 25;
-            backdrop-filter: blur(4px);
+            flex-direction: column;
+            height: 100%;
+            width: 100%;
+            background: #0f0f1a;
         }
 
-        .mobile-menu-overlay.active {
-            display: block;
-        }
-
-        .sidebar.mobile-open {
-            position: fixed;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            transform: translateX(0);
-            z-index: 30;
-            box-shadow: 4px 0 20px rgba(0,0,0,0.5);
-        }
-
-        /* Кнопка меню для мобильных */
-        .mobile-menu-btn {
-            display: none;
-            position: fixed;
-            top: 16px;
-            left: 16px;
-            width: 44px;
-            height: 44px;
+        .mobile-header {
             background: #1a1a2e;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid #2a2a3e;
+            flex-shrink: 0;
+        }
+
+        .mobile-menu-icon {
+            width: 40px;
+            height: 40px;
+            background: #16162a;
             border: 1px solid #2a2a3e;
             border-radius: 12px;
+            display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            z-index: 15;
-            backdrop-filter: blur(10px);
             color: white;
-            font-size: 1.4rem;
+            font-size: 1.3rem;
+            flex-shrink: 0;
         }
 
-        .sidebar-header {
-            padding: 24px 20px;
-            border-bottom: 1px solid #2a2a3e;
-            background: linear-gradient(135deg, #1e1e2e 0%, #16162a 100%);
+        .mobile-header-title {
+            flex: 1;
         }
 
-        .sidebar-header h1 {
-            font-size: 1.5rem;
+        .mobile-header-title h2 {
+            font-size: 1.1rem;
             font-weight: 600;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #667eea, #764ba2);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
         }
 
-        .sidebar-header p {
-            font-size: 0.8rem;
+        .mobile-header-title p {
+            font-size: 0.7rem;
             color: #6c6c8e;
-            margin-top: 4px;
         }
 
-        .profile-card {
+        .mobile-avatar {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        /* Мобильное выдвижное меню */
+        .mobile-drawer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 280px;
+            height: 100%;
+            background: #1a1a2e;
+            z-index: 100;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 2px 0 20px rgba(0,0,0,0.3);
+        }
+
+        .mobile-drawer.open {
+            transform: translateX(0);
+        }
+
+        .mobile-drawer-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 99;
+            display: none;
+        }
+
+        .mobile-drawer-overlay.open {
+            display: block;
+        }
+
+        .drawer-header {
+            padding: 24px 20px;
+            border-bottom: 1px solid #2a2a3e;
+            background: linear-gradient(135deg, #1e1e2e, #16162a);
+        }
+
+        .drawer-header h1 {
+            font-size: 1.4rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .drawer-profile {
             padding: 20px;
             background: #16162a;
             margin: 16px;
             border-radius: 20px;
             border: 1px solid #2a2a3e;
             cursor: pointer;
-            transition: all 0.3s ease;
         }
 
-        .profile-card:hover {
-            background: #1e1e32;
-            transform: translateY(-2px);
-        }
-
-        .profile-info {
+        .drawer-profile-info {
             display: flex;
             align-items: center;
             gap: 16px;
         }
 
-        .profile-avatar {
+        .drawer-avatar {
             width: 56px;
             height: 56px;
             background: linear-gradient(135deg, #667eea, #764ba2);
@@ -137,27 +183,24 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.8rem;
+            font-size: 1.6rem;
             font-weight: 600;
             color: white;
             flex-shrink: 0;
         }
 
-        .profile-details h3 {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: #ffffff;
-            word-break: break-word;
+        .drawer-profile-text h3 {
+            font-size: 1rem;
+            color: white;
         }
 
-        .profile-details p {
-            font-size: 0.8rem;
+        .drawer-profile-text p {
+            font-size: 0.75rem;
             color: #8a8aaa;
             margin-top: 4px;
-            word-break: break-word;
         }
 
-        .profile-status {
+        .drawer-status {
             font-size: 0.7rem;
             color: #4ade80;
             display: flex;
@@ -166,24 +209,18 @@
             margin-top: 4px;
         }
 
-        .profile-status::before {
+        .drawer-status::before {
             content: '';
             width: 8px;
             height: 8px;
             background: #4ade80;
             border-radius: 50%;
             display: inline-block;
-            animation: pulse 2s infinite;
         }
 
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        .notification-toggle {
+        .drawer-notification {
             background: #16162a;
-            margin: 8px 16px 16px 16px;
+            margin: 8px 16px;
             padding: 12px 16px;
             border-radius: 16px;
             border: 1px solid #2a2a3e;
@@ -193,65 +230,21 @@
             cursor: pointer;
         }
 
-        .notification-toggle:hover {
-            background: #1e1e32;
+        .drawer-permission {
+            background: #16162a;
+            margin: 8px 16px;
+            padding: 10px;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 0.7rem;
+            color: #ffaa44;
+            border: 1px solid #ffaa44;
+            cursor: pointer;
+            display: none;
         }
 
-        .notification-toggle .toggle-switch {
-            width: 44px;
-            height: 24px;
-            background: #2a2a3e;
-            border-radius: 24px;
-            position: relative;
-            transition: all 0.3s ease;
-        }
-
-        .notification-toggle .toggle-switch.active {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-        }
-
-        .notification-toggle .toggle-switch::after {
-            content: '';
-            width: 20px;
-            height: 20px;
-            background: white;
-            border-radius: 50%;
-            position: absolute;
-            top: 2px;
-            left: 2px;
-            transition: all 0.3s ease;
-        }
-
-        .notification-toggle .toggle-switch.active::after {
-            left: 22px;
-        }
-
-        /* Чат область */
-        .chat-area {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            background: #0f0f1a;
-            min-width: 0;
-            position: relative;
-        }
-
-        .chat-header {
-            padding: 16px 20px;
-            background: #1a1a2e;
-            border-bottom: 1px solid #2a2a3e;
-        }
-
-        .chat-header h2 {
-            font-size: 1.2rem;
-            font-weight: 600;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-
-        .messages-container {
+        /* Область сообщений (общая для ПК и мобильных) */
+        .messages-area {
             flex: 1;
             overflow-y: auto;
             padding: 16px;
@@ -263,10 +256,9 @@
 
         .message {
             max-width: 85%;
-            padding: 8px 14px;
+            padding: 10px 14px;
             border-radius: 18px;
             word-wrap: break-word;
-            animation: fadeIn 0.2s ease;
         }
 
         .message.own {
@@ -330,6 +322,7 @@
             margin-top: 8px;
         }
 
+        /* Область ввода (общая) */
         .input-area {
             background: #1a1a2e;
             padding: 12px 16px;
@@ -337,6 +330,7 @@
             display: flex;
             gap: 8px;
             align-items: flex-end;
+            flex-shrink: 0;
         }
 
         .input-wrapper {
@@ -404,7 +398,7 @@
             backdrop-filter: blur(8px);
             justify-content: center;
             align-items: center;
-            z-index: 100;
+            z-index: 200;
         }
 
         .modal.active {
@@ -451,6 +445,12 @@
             font-size: 0.9rem;
         }
 
+        .modal-field input:focus,
+        .modal-field textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
         .modal-buttons {
             display: flex;
             gap: 12px;
@@ -484,155 +484,165 @@
             margin: 4px auto;
         }
 
-        .permission-request {
-            background: #16162a;
-            margin: 8px 16px;
-            padding: 10px;
-            border-radius: 12px;
-            text-align: center;
-            font-size: 0.7rem;
-            color: #ffaa44;
-            border: 1px solid #ffaa44;
-            cursor: pointer;
+        .toggle-switch {
+            width: 44px;
+            height: 24px;
+            background: #2a2a3e;
+            border-radius: 24px;
+            position: relative;
+            transition: all 0.3s ease;
         }
 
-        /* Скроллбар */
-        .messages-container::-webkit-scrollbar {
+        .toggle-switch.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+
+        .toggle-switch::after {
+            content: '';
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-switch.active::after {
+            left: 22px;
+        }
+
+        /* Скролл */
+        .messages-area::-webkit-scrollbar {
             width: 4px;
         }
 
-        .messages-container::-webkit-scrollbar-track {
+        .messages-area::-webkit-scrollbar-track {
             background: #1a1a2e;
         }
 
-        .messages-container::-webkit-scrollbar-thumb {
+        .messages-area::-webkit-scrollbar-thumb {
             background: #2a2a3e;
             border-radius: 4px;
         }
 
-        /* Мобильные стили */
-        @media (max-width: 768px) {
-            .mobile-menu-btn {
+        /* ПК версия (ширина > 768px) */
+        @media (min-width: 769px) {
+            .mobile-layout, .mobile-drawer, .mobile-drawer-overlay {
+                display: none !important;
+            }
+            .desktop-layout {
                 display: flex;
             }
-            
-            .sidebar {
-                position: fixed;
-                left: 0;
-                top: 0;
-                bottom: 0;
-                transform: translateX(-100%);
-                width: 280px;
-                z-index: 30;
+        }
+
+        /* Мобильная версия (ширина <= 768px) */
+        @media (max-width: 768px) {
+            .desktop-layout {
+                display: none !important;
             }
-            
-            .chat-header {
-                padding: 12px 16px;
-                padding-left: 60px;
-            }
-            
-            .chat-header h2 {
-                font-size: 1rem;
-            }
-            
-            .messages-container {
-                padding: 12px;
-            }
-            
-            .message {
-                max-width: 90%;
-                padding: 8px 12px;
-            }
-            
-            .message-text {
-                font-size: 0.85rem;
-            }
-            
-            .input-area {
-                padding: 10px 12px;
-            }
-            
-            .action-btn {
-                width: 36px;
-                height: 36px;
-                font-size: 1rem;
-            }
-            
-            .send-btn {
-                padding: 0 16px;
-                height: 36px;
-                font-size: 0.85rem;
-            }
-            
-            .profile-card {
-                margin: 12px;
-                padding: 14px;
-            }
-            
-            .profile-avatar {
-                width: 48px;
-                height: 48px;
-                font-size: 1.4rem;
-            }
-            
-            .profile-details h3 {
-                font-size: 1rem;
+            .mobile-layout {
+                display: flex;
             }
         }
     </style>
 </head>
 <body>
 
-<!-- Кнопка меню для телефона -->
-<button class="mobile-menu-btn" id="mobileMenuBtn">☰</button>
-<div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
-
-<div class="app-container">
-    <div class="sidebar" id="sidebar">
+<!-- ПК версия -->
+<div class="desktop-layout">
+    <div class="desktop-sidebar">
         <div class="sidebar-header">
             <h1>Modern Messenger</h1>
             <p>Связь без границ</p>
         </div>
-        <div class="profile-card" id="profileCard">
+        <div class="profile-card" id="desktopProfileCard">
             <div class="profile-info">
-                <div class="profile-avatar" id="avatarDisplay">U</div>
+                <div class="profile-avatar" id="desktopAvatar">U</div>
                 <div class="profile-details">
-                    <h3 id="profileName">Пользователь</h3>
+                    <h3 id="desktopName">Пользователь</h3>
                     <div class="profile-status">Онлайн</div>
-                    <p id="profileBio">Нажми для редактирования</p>
+                    <p id="desktopBio">Нажми для редактирования</p>
                 </div>
             </div>
         </div>
-        <div class="notification-toggle" id="notificationToggle">
+        <div class="notification-toggle" id="desktopNotificationToggle">
             <span>Уведомления</span>
-            <div class="toggle-switch" id="toggleSwitch"></div>
+            <div class="toggle-switch" id="desktopToggleSwitch"></div>
         </div>
-        <div class="permission-request" id="permissionRequest" style="display: none;">
+        <div class="permission-request" id="desktopPermissionRequest" style="display: none;">
             Нажмите, чтобы включить уведомления
         </div>
         <div style="flex:1"></div>
     </div>
-
-    <div class="chat-area">
+    <div class="desktop-chat">
         <div class="chat-header">
             <h2>Общий чат</h2>
         </div>
-        <div class="messages-container" id="messagesContainer">
-            <div class="system-message">Добро пожаловать в Modern Messenger</div>
-        </div>
+        <div class="messages-area" id="desktopMessages"></div>
         <div class="input-area">
             <div class="input-wrapper">
-                <textarea id="messageInput" rows="1" placeholder="Введите сообщение..."></textarea>
+                <textarea id="desktopMessageInput" rows="1" placeholder="Введите сообщение..."></textarea>
             </div>
             <div class="action-buttons">
-                <button class="action-btn" id="fileBtn">📎</button>
-                <button class="action-btn" id="imageBtn">🖼️</button>
-                <button class="send-btn" id="sendBtn">Отправить</button>
+                <button class="action-btn" id="desktopFileBtn">📎</button>
+                <button class="action-btn" id="desktopImageBtn">🖼️</button>
+                <button class="send-btn" id="desktopSendBtn">Отправить</button>
             </div>
         </div>
     </div>
 </div>
 
+<!-- Мобильная версия -->
+<div class="mobile-layout">
+    <div class="mobile-header">
+        <div class="mobile-menu-icon" id="mobileMenuIcon">☰</div>
+        <div class="mobile-header-title">
+            <h2>Общий чат</h2>
+            <p>Modern Messenger</p>
+        </div>
+        <div class="mobile-avatar" id="mobileAvatar">U</div>
+    </div>
+    <div class="messages-area" id="mobileMessages"></div>
+    <div class="input-area">
+        <div class="input-wrapper">
+            <textarea id="mobileMessageInput" rows="1" placeholder="Введите сообщение..."></textarea>
+        </div>
+        <div class="action-buttons">
+            <button class="action-btn" id="mobileFileBtn">📎</button>
+            <button class="action-btn" id="mobileImageBtn">🖼️</button>
+            <button class="send-btn" id="mobileSendBtn">Отправить</button>
+        </div>
+    </div>
+</div>
+
+<!-- Мобильное выдвижное меню -->
+<div class="mobile-drawer-overlay" id="mobileDrawerOverlay"></div>
+<div class="mobile-drawer" id="mobileDrawer">
+    <div class="drawer-header">
+        <h1>Modern Messenger</h1>
+        <p style="font-size: 0.7rem; color: #6c6c8e; margin-top: 4px;">Связь без границ</p>
+    </div>
+    <div class="drawer-profile" id="mobileDrawerProfile">
+        <div class="drawer-profile-info">
+            <div class="drawer-avatar" id="drawerAvatar">U</div>
+            <div class="drawer-profile-text">
+                <h3 id="drawerName">Пользователь</h3>
+                <div class="drawer-status">Онлайн</div>
+                <p id="drawerBio">Нажми для редактирования</p>
+            </div>
+        </div>
+    </div>
+    <div class="drawer-notification" id="mobileNotificationToggle">
+        <span>Уведомления</span>
+        <div class="toggle-switch" id="mobileToggleSwitch"></div>
+    </div>
+    <div class="drawer-permission" id="mobilePermissionRequest">Нажмите, чтобы включить уведомления</div>
+    <div style="flex:1"></div>
+</div>
+
+<!-- Модальное окно профиля -->
 <div class="modal" id="profileModal">
     <div class="modal-content">
         <h3>Редактирование профиля</h3>
@@ -657,6 +667,7 @@
 
 <script src="/socket.io/socket.io.js"></script>
 <script>
+    // ========== ОБЩИЕ ПЕРЕМЕННЫЕ ==========
     let socket = null;
     let currentUser = '';
     let userAvatarColor = '#667eea';
@@ -666,60 +677,7 @@
     let unreadCount = 0;
     let originalTitle = document.title;
 
-    // DOM элементы
-    const messagesContainer = document.getElementById('messagesContainer');
-    const messageInput = document.getElementById('messageInput');
-    const sendBtn = document.getElementById('sendBtn');
-    const fileBtn = document.getElementById('fileBtn');
-    const imageBtn = document.getElementById('imageBtn');
-    const profileCard = document.getElementById('profileCard');
-    const profileModal = document.getElementById('profileModal');
-    const editName = document.getElementById('editName');
-    const editBio = document.getElementById('editBio');
-    const editColor = document.getElementById('editColor');
-    const saveProfileBtn = document.getElementById('saveProfileBtn');
-    const closeModalBtn = document.getElementById('closeModalBtn');
-    const avatarDisplay = document.getElementById('avatarDisplay');
-    const profileNameSpan = document.getElementById('profileName');
-    const profileBioSpan = document.getElementById('profileBio');
-    const notificationToggle = document.getElementById('notificationToggle');
-    const toggleSwitch = document.getElementById('toggleSwitch');
-    const permissionRequest = document.getElementById('permissionRequest');
-    
-    // Мобильное меню
-    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-    const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
-    const sidebar = document.getElementById('sidebar');
-
-    function closeMobileMenu() {
-        sidebar.classList.remove('mobile-open');
-        mobileMenuOverlay.classList.remove('active');
-    }
-
-    function openMobileMenu() {
-        sidebar.classList.add('mobile-open');
-        mobileMenuOverlay.classList.add('active');
-    }
-
-    if (mobileMenuBtn) {
-        mobileMenuBtn.onclick = openMobileMenu;
-    }
-    
-    if (mobileMenuOverlay) {
-        mobileMenuOverlay.onclick = closeMobileMenu;
-    }
-
-    // Закрываем меню при клике на профиль (на телефоне)
-    profileCard.onclick = () => {
-        if (window.innerWidth <= 768) {
-            closeMobileMenu();
-        }
-        editName.value = currentUser;
-        editBio.value = userBio;
-        editColor.value = userAvatarColor;
-        profileModal.classList.add('active');
-    };
-
+    // ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
     function getMskTime() {
         const now = new Date();
         const mskOffset = 3 * 60 * 60 * 1000;
@@ -727,77 +685,42 @@
         return mskTime.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
     }
 
-    function loadProfile() {
-        const savedName = localStorage.getItem('profile_name');
-        const savedBio = localStorage.getItem('profile_bio');
-        const savedColor = localStorage.getItem('profile_color');
-        const savedNotifications = localStorage.getItem('notifications_enabled');
-        
-        if (savedName) {
-            currentUser = savedName;
-            profileNameSpan.textContent = currentUser;
-            editName.value = currentUser;
-        }
-        if (savedBio) {
-            userBio = savedBio;
-            profileBioSpan.textContent = userBio || 'Нажми для редактирования';
-            editBio.value = userBio;
-        }
-        if (savedColor) {
-            userAvatarColor = savedColor;
-            editColor.value = savedColor;
-            avatarDisplay.style.background = userAvatarColor;
-        }
-        if (savedNotifications === 'true') {
-            notificationsEnabled = true;
-            toggleSwitch.classList.add('active');
-        }
-        
-        const initial = currentUser ? currentUser.charAt(0).toUpperCase() : 'U';
-        avatarDisplay.textContent = initial;
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
     }
 
-    function saveProfile() {
-        const newName = editName.value.trim();
-        if (!newName) {
-            alert('Введите имя');
-            return;
-        }
-        
-        currentUser = newName;
-        userBio = editBio.value;
-        userAvatarColor = editColor.value;
-        
-        localStorage.setItem('profile_name', currentUser);
-        localStorage.setItem('profile_bio', userBio);
-        localStorage.setItem('profile_color', userAvatarColor);
-        
-        profileNameSpan.textContent = currentUser;
-        profileBioSpan.textContent = userBio || 'Нажми для редактирования';
-        avatarDisplay.style.background = userAvatarColor;
-        avatarDisplay.textContent = currentUser.charAt(0).toUpperCase();
-        
-        profileModal.classList.remove('active');
-        
-        if (socket && socket.connected) {
-            socket.emit('register', currentUser);
+    function updateUnreadCount() {
+        if (!document.hasFocus()) {
+            unreadCount++;
+            document.title = `(${unreadCount}) Modern Messenger`;
         }
     }
 
+    function resetUnreadCount() {
+        unreadCount = 0;
+        document.title = originalTitle;
+    }
+
+    window.addEventListener('focus', resetUnreadCount);
+
+    // ========== УВЕДОМЛЕНИЯ ==========
     async function requestNotificationPermission() {
         if (!('Notification' in window)) return false;
         if (Notification.permission === 'granted') {
             notificationPermissionGranted = true;
-            permissionRequest.style.display = 'none';
             return true;
         }
         if (Notification.permission !== 'denied') {
             const permission = await Notification.requestPermission();
             notificationPermissionGranted = permission === 'granted';
-            if (notificationPermissionGranted) permissionRequest.style.display = 'none';
             return notificationPermissionGranted;
         }
-        permissionRequest.style.display = 'block';
         return false;
     }
 
@@ -815,80 +738,95 @@
         } catch(e) {}
     }
 
-    function updateUnreadCount() {
-        if (!document.hasFocus()) {
-            unreadCount++;
-            document.title = `(${unreadCount}) Modern Messenger`;
+    // ========== ПРОФИЛЬ ==========
+    function loadProfile() {
+        const savedName = localStorage.getItem('profile_name');
+        const savedBio = localStorage.getItem('profile_bio');
+        const savedColor = localStorage.getItem('profile_color');
+        const savedNotifications = localStorage.getItem('notifications_enabled');
+        
+        if (savedName) {
+            currentUser = savedName;
+            editName.value = currentUser;
+        }
+        if (savedBio) {
+            userBio = savedBio;
+            editBio.value = userBio;
+        }
+        if (savedColor) {
+            userAvatarColor = savedColor;
+            editColor.value = savedColor;
+        }
+        if (savedNotifications === 'true') {
+            notificationsEnabled = true;
+        }
+        
+        updateAllProfileUI();
+    }
+
+    function updateAllProfileUI() {
+        const initial = currentUser ? currentUser.charAt(0).toUpperCase() : 'U';
+        
+        // ПК
+        const desktopAvatar = document.getElementById('desktopAvatar');
+        const desktopName = document.getElementById('desktopName');
+        const desktopBio = document.getElementById('desktopBio');
+        const desktopToggle = document.getElementById('desktopToggleSwitch');
+        if (desktopAvatar) {
+            desktopAvatar.style.background = userAvatarColor;
+            desktopAvatar.textContent = initial;
+        }
+        if (desktopName) desktopName.textContent = currentUser || 'Пользователь';
+        if (desktopBio) desktopBio.textContent = userBio || 'Нажми для редактирования';
+        if (desktopToggle && notificationsEnabled) desktopToggle.classList.add('active');
+        else if (desktopToggle) desktopToggle.classList.remove('active');
+        
+        // Мобильные
+        const mobileAvatar = document.getElementById('mobileAvatar');
+        const drawerAvatar = document.getElementById('drawerAvatar');
+        const drawerName = document.getElementById('drawerName');
+        const drawerBio = document.getElementById('drawerBio');
+        const mobileToggle = document.getElementById('mobileToggleSwitch');
+        
+        if (mobileAvatar) {
+            mobileAvatar.style.background = userAvatarColor;
+            mobileAvatar.textContent = initial;
+        }
+        if (drawerAvatar) {
+            drawerAvatar.style.background = userAvatarColor;
+            drawerAvatar.textContent = initial;
+        }
+        if (drawerName) drawerName.textContent = currentUser || 'Пользователь';
+        if (drawerBio) drawerBio.textContent = userBio || 'Нажми для редактирования';
+        if (mobileToggle && notificationsEnabled) mobileToggle.classList.add('active');
+        else if (mobileToggle) mobileToggle.classList.remove('active');
+    }
+
+    function saveProfile() {
+        const newName = editName.value.trim();
+        if (!newName) {
+            alert('Введите имя');
+            return;
+        }
+        
+        currentUser = newName;
+        userBio = editBio.value;
+        userAvatarColor = editColor.value;
+        
+        localStorage.setItem('profile_name', currentUser);
+        localStorage.setItem('profile_bio', userBio);
+        localStorage.setItem('profile_color', userAvatarColor);
+        
+        updateAllProfileUI();
+        document.getElementById('profileModal').classList.remove('active');
+        
+        if (socket && socket.connected) {
+            socket.emit('register', currentUser);
         }
     }
 
-    function resetUnreadCount() {
-        unreadCount = 0;
-        document.title = originalTitle;
-    }
-
-    window.addEventListener('focus', resetUnreadCount);
-
-    saveProfileBtn.onclick = saveProfile;
-    closeModalBtn.onclick = () => profileModal.classList.remove('active');
-
-    notificationToggle.onclick = async () => {
-        if (!notificationPermissionGranted) {
-            const granted = await requestNotificationPermission();
-            if (!granted) {
-                alert('Разрешите уведомления в настройках браузера');
-                return;
-            }
-        }
-        notificationsEnabled = !notificationsEnabled;
-        if (notificationsEnabled) {
-            toggleSwitch.classList.add('active');
-            localStorage.setItem('notifications_enabled', 'true');
-        } else {
-            toggleSwitch.classList.remove('active');
-            localStorage.setItem('notifications_enabled', 'false');
-        }
-    };
-
-    permissionRequest.onclick = async () => { await requestNotificationPermission(); };
-
-    function initSocket() {
-        socket = io();
-        socket.on('connect', () => { socket.emit('register', currentUser); });
-        socket.on('history', (msgs) => {
-            messagesContainer.innerHTML = '';
-            if (msgs.length === 0) {
-                messagesContainer.innerHTML = '<div class="system-message">Добро пожаловать в Modern Messenger</div>';
-            }
-            msgs.forEach(msg => addMessageToUI(msg, msg.username === currentUser));
-            resetUnreadCount();
-        });
-        socket.on('message', (msg) => {
-            const isOwn = msg.username === currentUser;
-            addMessageToUI(msg, isOwn);
-            if (!isOwn && !document.hasFocus()) {
-                showNotification(msg.username, msg.text || 'Отправил(а) файл', msg.id);
-                updateUnreadCount();
-            }
-        });
-        socket.on('user_joined', (text) => {
-            const sysDiv = document.createElement('div');
-            sysDiv.className = 'system-message';
-            sysDiv.textContent = text;
-            messagesContainer.appendChild(sysDiv);
-            setTimeout(() => sysDiv.remove(), 4000);
-            if (!document.hasFocus()) showNotification('Modern Messenger', text, 'system');
-        });
-        socket.on('user_left', (text) => {
-            const sysDiv = document.createElement('div');
-            sysDiv.className = 'system-message';
-            sysDiv.textContent = text;
-            messagesContainer.appendChild(sysDiv);
-            setTimeout(() => sysDiv.remove(), 4000);
-        });
-    }
-    
-    function addMessageToUI(msg, isOwn) {
+    // ========== UI СООБЩЕНИЙ ==========
+    function addMessageToUI(container, msg, isOwn) {
         const div = document.createElement('div');
         div.className = `message ${isOwn ? 'own' : 'other'}`;
         let content = '';
@@ -908,23 +846,22 @@
         }
         content += `<div class="message-time">${msg.time || getMskTime()}</div>`;
         div.innerHTML = content;
-        messagesContainer.appendChild(div);
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        container.appendChild(div);
+        container.scrollTop = container.scrollHeight;
     }
-    
-    function escapeHtml(str) {
-        if (!str) return '';
-        return str.replace(/[&<>]/g, function(m) {
-            if (m === '&') return '&amp;';
-            if (m === '<') return '&lt;';
-            if (m === '>') return '&gt;';
-            return m;
-        });
+
+    function clearMessages(container) {
+        container.innerHTML = '';
+        const sysDiv = document.createElement('div');
+        sysDiv.className = 'system-message';
+        sysDiv.textContent = 'Добро пожаловать в Modern Messenger';
+        container.appendChild(sysDiv);
     }
-    
-    async function sendWithFiles(files) {
-        const text = messageInput.value.trim();
+
+    // ========== ОТПРАВКА СООБЩЕНИЙ ==========
+    async function sendWithFiles(text, files, callback) {
         if (!text && !files.length) return;
+        
         const uploadedFiles = [];
         for (const file of files) {
             const formData = new FormData();
@@ -933,46 +870,308 @@
             const data = await res.json();
             uploadedFiles.push({ url: data.url, name: data.name });
         }
+        
         socket.emit('message', { text: text, files: uploadedFiles, time: getMskTime() });
-        messageInput.value = '';
-        messageInput.style.height = 'auto';
+        if (callback) callback();
     }
-    
-    sendBtn.onclick = () => sendWithFiles([]);
-    messageInput.onkeypress = (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            sendWithFiles([]);
+
+    // ========== ИНИЦИАЛИЗАЦИЯ СОКЕТА ==========
+    function initSocket() {
+        socket = io();
+        
+        socket.on('connect', () => {
+            socket.emit('register', currentUser);
+        });
+        
+        socket.on('history', (msgs) => {
+            const desktopContainer = document.getElementById('desktopMessages');
+            const mobileContainer = document.getElementById('mobileMessages');
+            
+            if (desktopContainer) clearMessages(desktopContainer);
+            if (mobileContainer) clearMessages(mobileContainer);
+            
+            msgs.forEach(msg => {
+                const isOwn = msg.username === currentUser;
+                if (desktopContainer) addMessageToUI(desktopContainer, msg, isOwn);
+                if (mobileContainer) addMessageToUI(mobileContainer, msg, isOwn);
+            });
+            resetUnreadCount();
+        });
+        
+        socket.on('message', (msg) => {
+            const isOwn = msg.username === currentUser;
+            const desktopContainer = document.getElementById('desktopMessages');
+            const mobileContainer = document.getElementById('mobileMessages');
+            
+            if (desktopContainer) addMessageToUI(desktopContainer, msg, isOwn);
+            if (mobileContainer) addMessageToUI(mobileContainer, msg, isOwn);
+            
+            if (!isOwn && !document.hasFocus()) {
+                showNotification(msg.username, msg.text || 'Отправил(а) файл', msg.id);
+                updateUnreadCount();
+            }
+        });
+        
+        socket.on('user_joined', (text) => {
+            const desktopContainer = document.getElementById('desktopMessages');
+            const mobileContainer = document.getElementById('mobileMessages');
+            const sysDiv = document.createElement('div');
+            sysDiv.className = 'system-message';
+            sysDiv.textContent = text;
+            if (desktopContainer) desktopContainer.appendChild(sysDiv);
+            if (mobileContainer) mobileContainer.appendChild(sysDiv);
+            setTimeout(() => sysDiv.remove(), 4000);
+            if (!document.hasFocus()) showNotification('Modern Messenger', text, 'system');
+        });
+        
+        socket.on('user_left', (text) => {
+            const desktopContainer = document.getElementById('desktopMessages');
+            const mobileContainer = document.getElementById('mobileMessages');
+            const sysDiv = document.createElement('div');
+            sysDiv.className = 'system-message';
+            sysDiv.textContent = text;
+            if (desktopContainer) desktopContainer.appendChild(sysDiv);
+            if (mobileContainer) mobileContainer.appendChild(sysDiv);
+            setTimeout(() => sysDiv.remove(), 4000);
+        });
+    }
+
+    // ========== НАСТРОЙКА ОБРАБОТЧИКОВ ==========
+    function setupEventHandlers() {
+        // ПК
+        const desktopSendBtn = document.getElementById('desktopSendBtn');
+        const desktopMessageInput = document.getElementById('desktopMessageInput');
+        const desktopFileBtn = document.getElementById('desktopFileBtn');
+        const desktopImageBtn = document.getElementById('desktopImageBtn');
+        const desktopProfileCard = document.getElementById('desktopProfileCard');
+        const desktopNotificationToggle = document.getElementById('desktopNotificationToggle');
+        const desktopToggleSwitch = document.getElementById('desktopToggleSwitch');
+        
+        if (desktopSendBtn) {
+            desktopSendBtn.onclick = () => {
+                const text = desktopMessageInput.value.trim();
+                if (text) {
+                    sendWithFiles(text, [], () => {
+                        desktopMessageInput.value = '';
+                        desktopMessageInput.style.height = 'auto';
+                    });
+                }
+            };
         }
-    };
-    messageInput.addEventListener('input', function() {
-        this.style.height = 'auto';
-        this.style.height = Math.min(this.scrollHeight, 100) + 'px';
-    });
-    
-    fileBtn.onclick = () => {
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.multiple = true;
-        input.onchange = (e) => sendWithFiles(Array.from(e.target.files));
-        input.click();
-    };
-    imageBtn.onclick = () => {
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = 'image/*,video/*';
-        input.multiple = true;
-        input.onchange = (e) => sendWithFiles(Array.from(e.target.files));
-        input.click();
-    };
-    
+        
+        if (desktopMessageInput) {
+            desktopMessageInput.onkeypress = (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    desktopSendBtn.click();
+                }
+            };
+            desktopMessageInput.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+            });
+        }
+        
+        if (desktopFileBtn) {
+            desktopFileBtn.onclick = () => {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.multiple = true;
+                input.onchange = async (e) => {
+                    const text = desktopMessageInput.value.trim();
+                    await sendWithFiles(text, Array.from(e.target.files), () => {
+                        desktopMessageInput.value = '';
+                        desktopMessageInput.style.height = 'auto';
+                    });
+                };
+                input.click();
+            };
+        }
+        
+        if (desktopImageBtn) {
+            desktopImageBtn.onclick = () => {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*,video/*';
+                input.multiple = true;
+                input.onchange = async (e) => {
+                    const text = desktopMessageInput.value.trim();
+                    await sendWithFiles(text, Array.from(e.target.files), () => {
+                        desktopMessageInput.value = '';
+                        desktopMessageInput.style.height = 'auto';
+                    });
+                };
+                input.click();
+            };
+        }
+        
+        if (desktopProfileCard) {
+            desktopProfileCard.onclick = () => {
+                document.getElementById('profileModal').classList.add('active');
+            };
+        }
+        
+        if (desktopNotificationToggle) {
+            desktopNotificationToggle.onclick = async () => {
+                if (!notificationPermissionGranted) {
+                    const granted = await requestNotificationPermission();
+                    if (!granted) {
+                        alert('Разрешите уведомления в настройках браузера');
+                        return;
+                    }
+                }
+                notificationsEnabled = !notificationsEnabled;
+                localStorage.setItem('notifications_enabled', notificationsEnabled);
+                if (notificationsEnabled) {
+                    desktopToggleSwitch.classList.add('active');
+                } else {
+                    desktopToggleSwitch.classList.remove('active');
+                }
+                updateAllProfileUI();
+            };
+        }
+        
+        // Мобильные
+        const mobileSendBtn = document.getElementById('mobileSendBtn');
+        const mobileMessageInput = document.getElementById('mobileMessageInput');
+        const mobileFileBtn = document.getElementById('mobileFileBtn');
+        const mobileImageBtn = document.getElementById('mobileImageBtn');
+        const mobileAvatar = document.getElementById('mobileAvatar');
+        const mobileDrawerProfile = document.getElementById('mobileDrawerProfile');
+        const mobileNotificationToggle = document.getElementById('mobileNotificationToggle');
+        const mobileToggleSwitch = document.getElementById('mobileToggleSwitch');
+        const mobileMenuIcon = document.getElementById('mobileMenuIcon');
+        const mobileDrawer = document.getElementById('mobileDrawer');
+        const mobileDrawerOverlay = document.getElementById('mobileDrawerOverlay');
+        
+        function closeDrawer() {
+            mobileDrawer.classList.remove('open');
+            mobileDrawerOverlay.classList.remove('open');
+        }
+        
+        function openDrawer() {
+            mobileDrawer.classList.add('open');
+            mobileDrawerOverlay.classList.add('open');
+        }
+        
+        if (mobileMenuIcon) mobileMenuIcon.onclick = openDrawer;
+        if (mobileDrawerOverlay) mobileDrawerOverlay.onclick = closeDrawer;
+        
+        if (mobileSendBtn) {
+            mobileSendBtn.onclick = () => {
+                const text = mobileMessageInput.value.trim();
+                if (text) {
+                    sendWithFiles(text, [], () => {
+                        mobileMessageInput.value = '';
+                        mobileMessageInput.style.height = 'auto';
+                    });
+                }
+            };
+        }
+        
+        if (mobileMessageInput) {
+            mobileMessageInput.onkeypress = (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    mobileSendBtn.click();
+                }
+            };
+            mobileMessageInput.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+            });
+        }
+        
+        if (mobileFileBtn) {
+            mobileFileBtn.onclick = () => {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.multiple = true;
+                input.onchange = async (e) => {
+                    const text = mobileMessageInput.value.trim();
+                    await sendWithFiles(text, Array.from(e.target.files), () => {
+                        mobileMessageInput.value = '';
+                        mobileMessageInput.style.height = 'auto';
+                    });
+                };
+                input.click();
+            };
+        }
+        
+        if (mobileImageBtn) {
+            mobileImageBtn.onclick = () => {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*,video/*';
+                input.multiple = true;
+                input.onchange = async (e) => {
+                    const text = mobileMessageInput.value.trim();
+                    await sendWithFiles(text, Array.from(e.target.files), () => {
+                        mobileMessageInput.value = '';
+                        mobileMessageInput.style.height = 'auto';
+                    });
+                };
+                input.click();
+            };
+        }
+        
+        if (mobileAvatar) {
+            mobileAvatar.onclick = openDrawer;
+        }
+        
+        if (mobileDrawerProfile) {
+            mobileDrawerProfile.onclick = () => {
+                closeDrawer();
+                document.getElementById('profileModal').classList.add('active');
+            };
+        }
+        
+        if (mobileNotificationToggle) {
+            mobileNotificationToggle.onclick = async () => {
+                if (!notificationPermissionGranted) {
+                    const granted = await requestNotificationPermission();
+                    if (!granted) {
+                        alert('Разрешите уведомления в настройках браузера');
+                        return;
+                    }
+                }
+                notificationsEnabled = !notificationsEnabled;
+                localStorage.setItem('notifications_enabled', notificationsEnabled);
+                if (notificationsEnabled) {
+                    mobileToggleSwitch.classList.add('active');
+                } else {
+                    mobileToggleSwitch.classList.remove('active');
+                }
+                updateAllProfileUI();
+                
+                const desktopToggle = document.getElementById('desktopToggleSwitch');
+                if (desktopToggle && notificationsEnabled) desktopToggle.classList.add('active');
+                else if (desktopToggle) desktopToggle.classList.remove('active');
+            };
+        }
+        
+        // Модальное окно
+        const saveBtn = document.getElementById('saveProfileBtn');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        if (saveBtn) saveBtn.onclick = saveProfile;
+        if (closeModalBtn) closeModalBtn.onclick = () => {
+            document.getElementById('profileModal').classList.remove('active');
+        };
+        
+        // Закрытие по клику вне
+        window.onclick = (e) => {
+            const modal = document.getElementById('profileModal');
+            if (e.target === modal) modal.classList.remove('active');
+        };
+    }
+
+    // ========== ЗАПУСК ==========
     loadProfile();
-    requestNotificationPermission();
+    requestNotificationPermission().then(() => {
+        updateAllProfileUI();
+    });
     initSocket();
-    
-    window.onclick = (e) => {
-        if (e.target === profileModal) profileModal.classList.remove('active');
-    };
+    setupEventHandlers();
 </script>
 </body>
 </html>
