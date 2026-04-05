@@ -1,1 +1,159 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мессенджер</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: system-ui; background: #0b141a; height: 100vh; display: flex; justify-content: center; align-items: center; }
+        .chat-container { width: 100%; max-width: 800px; height: 90vh; background: #ece5dd; border-radius: 16px; display: flex; flex-direction: column; overflow: hidden; }
+        .login-screen { background: #075e54; color: white; padding: 20px; text-align: center; }
+        .login-screen input, .login-screen button { padding: 10px; margin: 8px; border-radius: 24px; border: none; }
+        .login-screen button { background: #25d366; color: white; cursor: pointer; }
+        .chat-header { background: #075e54; color: white; padding: 12px; font-weight: bold; }
+        .messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+        .message { max-width: 70%; padding: 8px 12px; border-radius: 12px; background: white; align-self: flex-start; }
+        .message.own { background: #dcf8c5; align-self: flex-end; }
+        .message .username { font-weight: bold; font-size: 0.8rem; color: #075e54; }
+        .message .time { font-size: 0.7rem; color: gray; text-align: right; margin-top: 4px; }
+        .file-preview { max-width: 100%; max-height: 150px; border-radius: 8px; margin-top: 6px; }
+        .file-link { display: inline-block; background: #e9ecef; padding: 4px 8px; border-radius: 16px; text-decoration: none; font-size: 0.8rem; margin-top: 6px; }
+        .input-area { background: white; padding: 12px; display: flex; gap: 8px; border-top: 1px solid #ddd; }
+        .input-area input { flex: 1; padding: 10px; border-radius: 24px; border: 1px solid #ccc; }
+        .input-area button { background: #075e54; color: white; border: none; padding: 10px 20px; border-radius: 24px; cursor: pointer; }
+        .file-buttons button { background: #ddd; color: black; padding: 10px; margin-right: 5px; }
+        .status { font-size: 0.8rem; padding: 4px 12px; text-align: center; color: gray; }
+    </style>
+</head>
+<body>
+<div class="chat-container" id="app">
+    <div class="login-screen" id="loginScreen">
+        <h2>Введите ваше имя</h2>
+        <input type="text" id="username" placeholder="Имя" autocomplete="off">
+        <button id="joinBtn">Войти в чат</button>
+    </div>
+    <div id="chatInterface" style="display: none; flex-direction: column; height: 100%;">
+        <div class="chat-header">💬 Общий чат</div>
+        <div class="messages" id="messages"></div>
+        <div class="status" id="status"></div>
+        <div class="input-area">
+            <div class="file-buttons">
+                <button id="fileBtn">📎 Файл</button>
+                <button id="imageBtn">🖼️ Фото/Видео</button>
+            </div>
+            <input type="text" id="messageInput" placeholder="Сообщение...">
+            <button id="sendBtn">➤</button>
+        </div>
+    </div>
+</div>
 
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    let socket = null;
+    let currentUser = '';
+
+    const loginScreen = document.getElementById('loginScreen');
+    const chatInterface = document.getElementById('chatInterface');
+    const usernameInput = document.getElementById('username');
+    const joinBtn = document.getElementById('joinBtn');
+    const messagesDiv = document.getElementById('messages');
+    const messageInput = document.getElementById('messageInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const statusDiv = document.getElementById('status');
+    const fileBtn = document.getElementById('fileBtn');
+    const imageBtn = document.getElementById('imageBtn');
+
+    joinBtn.onclick = () => {
+        const name = usernameInput.value.trim();
+        if (!name) return alert('Введите имя');
+        currentUser = name;
+        socket = io();
+        
+        socket.on('connect', () => {
+            socket.emit('register', currentUser);
+            loginScreen.style.display = 'none';
+            chatInterface.style.display = 'flex';
+        });
+
+        socket.on('history', (msgs) => {
+            messagesDiv.innerHTML = '';
+            msgs.forEach(msg => addMessageToUI(msg, msg.username === currentUser));
+        });
+
+        socket.on('message', (msg) => {
+            addMessageToUI(msg, msg.username === currentUser);
+        });
+
+        socket.on('user_joined', (text) => {
+            statusDiv.innerText = text;
+            setTimeout(() => statusDiv.innerText = '', 3000);
+        });
+
+        socket.on('user_left', (text) => {
+            statusDiv.innerText = text;
+            setTimeout(() => statusDiv.innerText = '', 3000);
+        });
+    };
+
+    function addMessageToUI(msg, isOwn) {
+        const div = document.createElement('div');
+        div.className = `message ${isOwn ? 'own' : ''}`;
+        div.innerHTML = `<div class="username">${msg.username}</div><div>${msg.text || ''}</div>`;
+        
+        if (msg.files && msg.files.length) {
+            msg.files.forEach(file => {
+                if (file.url.match(/\.(jpg|jpeg|png|gif|webp)/i)) {
+                    div.innerHTML += `<img src="${file.url}" class="file-preview" onclick="window.open(this.src)">`;
+                } else if (file.url.match(/\.(mp4|webm|mov)/i)) {
+                    div.innerHTML += `<video src="${file.url}" controls class="file-preview"></video>`;
+                } else {
+                    div.innerHTML += `<a href="${file.url}" download class="file-link">📄 ${file.name}</a>`;
+                }
+            });
+        }
+        
+        div.innerHTML += `<div class="time">${msg.time}</div>`;
+        messagesDiv.appendChild(div);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    async function sendWithFiles(files) {
+        if (!files.length && !messageInput.value.trim()) return;
+        const formData = new FormData();
+        const uploadedFiles = [];
+        for (let file of files) {
+            formData.append('file', file);
+            const res = await fetch('/upload', { method: 'POST', body: formData });
+            const data = await res.json();
+            uploadedFiles.push({ url: data.url, name: data.name });
+        }
+        socket.emit('message', {
+            text: messageInput.value,
+            files: uploadedFiles
+        });
+        messageInput.value = '';
+    }
+
+    sendBtn.onclick = () => sendWithFiles([]);
+    messageInput.onkeypress = (e) => { if(e.key === 'Enter') sendWithFiles([]); };
+    
+    fileBtn.onclick = () => {
+        let input = document.createElement('input');
+        input.type = 'file';
+        input.multiple = true;
+        input.onchange = (e) => sendWithFiles(Array.from(e.target.files));
+        input.click();
+    };
+    
+    imageBtn.onclick = () => {
+        let input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*,video/*';
+        input.multiple = true;
+        input.onchange = (e) => sendWithFiles(Array.from(e.target.files));
+        input.click();
+    };
+</script>
+</body>
+</html>
