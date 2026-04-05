@@ -29,9 +29,9 @@
             height: 100vh;
             overflow: hidden;
             width: 100%;
+            position: fixed;
         }
 
-        /* Основной контейнер */
         .app {
             display: flex;
             height: 100%;
@@ -40,12 +40,13 @@
 
         /* Боковая панель */
         .sidebar {
-            width: 280px;
+            width: 300px;
             background: var(--bg-secondary);
             border-right: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
             flex-shrink: 0;
+            overflow-y: auto;
         }
 
         .sidebar-header {
@@ -95,69 +96,75 @@
         .profile-info h3 {
             font-size: 0.95rem;
             color: var(--text-primary);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
         }
 
         .profile-info p {
             font-size: 0.7rem;
             color: var(--text-secondary);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
         }
 
-        .online-status {
-            font-size: 0.7rem;
-            color: #4ade80;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .online-status::before {
-            content: '';
-            width: 8px;
-            height: 8px;
-            background: #4ade80;
-            border-radius: 50%;
-            display: inline-block;
-        }
-
-        /* Список пользователей */
-        .users-section, .chats-section {
+        /* Создание чата */
+        .create-chat {
             padding: 12px;
+            margin: 8px 12px;
+            background: var(--bg-tertiary);
+            border-radius: 12px;
+            display: flex;
+            gap: 8px;
         }
 
+        .create-chat input {
+            flex: 1;
+            padding: 10px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 0.85rem;
+        }
+
+        .create-chat button {
+            padding: 10px 16px;
+            background: #667eea;
+            border: none;
+            border-radius: 12px;
+            color: white;
+            cursor: pointer;
+        }
+
+        /* Секции */
         .section-title {
             font-size: 0.7rem;
             color: var(--text-secondary);
             text-transform: uppercase;
-            margin-bottom: 8px;
-            padding: 0 8px;
+            margin: 12px 12px 6px 12px;
         }
 
-        .user-item, .chat-item {
+        .chats-list, .users-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .chat-item, .user-item {
             padding: 10px 12px;
+            margin: 0 8px 4px 8px;
             border-radius: 12px;
             cursor: pointer;
-            margin-bottom: 4px;
             display: flex;
             align-items: center;
             gap: 10px;
         }
 
-        .user-item:hover, .chat-item:hover {
+        .chat-item:hover, .user-item:hover {
             background: var(--bg-tertiary);
         }
 
-        .user-item.active, .chat-item.active {
+        .chat-item.active, .user-item.active {
             background: var(--bg-tertiary);
             border-left: 3px solid #667eea;
         }
 
-        .user-avatar {
+        .item-avatar {
             width: 36px;
             height: 36px;
             border-radius: 50%;
@@ -170,15 +177,24 @@
             flex-shrink: 0;
         }
 
-        .user-name {
+        .item-name {
             flex: 1;
             font-size: 0.85rem;
             color: var(--text-primary);
         }
 
-        .user-status {
+        .item-status {
             font-size: 0.65rem;
             color: var(--text-secondary);
+        }
+
+        .online-dot {
+            width: 8px;
+            height: 8px;
+            background: #4ade80;
+            border-radius: 50%;
+            display: inline-block;
+            margin-left: 6px;
         }
 
         /* Настройки темы */
@@ -210,12 +226,14 @@
             flex-direction: column;
             background: var(--bg-primary);
             min-width: 0;
+            height: 100%;
         }
 
         .chat-header {
             padding: 16px 20px;
             background: var(--bg-secondary);
             border-bottom: 1px solid var(--border-color);
+            flex-shrink: 0;
         }
 
         .chat-header h2 {
@@ -316,6 +334,7 @@
             display: flex;
             gap: 8px;
             align-items: flex-end;
+            flex-shrink: 0;
         }
 
         .input-wrapper {
@@ -455,18 +474,8 @@
             color: var(--text-secondary);
         }
 
-        /* Скролл */
-        .messages-area::-webkit-scrollbar {
-            width: 4px;
-        }
-
-        .messages-area::-webkit-scrollbar-track {
-            background: var(--bg-secondary);
-        }
-
-        .messages-area::-webkit-scrollbar-thumb {
-            background: var(--border-color);
-            border-radius: 4px;
+        .scroll {
+            overflow-y: auto;
         }
 
         /* Мобильная версия */
@@ -479,7 +488,7 @@
                 transform: translateX(-100%);
                 transition: transform 0.3s ease;
                 z-index: 20;
-                width: 260px;
+                width: 280px;
             }
             .sidebar.open {
                 transform: translateX(0);
@@ -515,7 +524,11 @@
                 font-size: 1.2rem;
             }
             .chat-header {
+                padding: 12px 16px;
                 padding-left: 60px;
+            }
+            .input-area {
+                padding-bottom: env(safe-area-inset-bottom, 12px);
             }
         }
 
@@ -541,19 +554,20 @@
             <div class="avatar" id="avatar">U</div>
             <div class="profile-info">
                 <h3 id="profileName">Загрузка...</h3>
-                <div class="online-status">Онлайн</div>
+                <p id="profileBio"></p>
             </div>
         </div>
 
-        <div class="chats-section">
-            <div class="section-title">Личные чаты</div>
-            <div id="chatsList"></div>
+        <div class="create-chat">
+            <input type="text" id="newChatInput" placeholder="Имя пользователя">
+            <button id="createChatBtn">Создать чат</button>
         </div>
 
-        <div class="users-section">
-            <div class="section-title">Пользователи онлайн</div>
-            <div id="usersList"></div>
-        </div>
+        <div class="section-title">Личные чаты</div>
+        <div class="chats-list" id="chatsList"></div>
+
+        <div class="section-title">Пользователи</div>
+        <div class="users-list" id="usersList"></div>
 
         <div class="theme-section">
             <div class="theme-label">Цветовая тема</div>
@@ -562,7 +576,7 @@
     </div>
 
     <div class="chat-main">
-        <div class="chat-header">
+        <div class="chat-header" id="publicChatBtn">
             <h2 id="chatTitle">Общий чат</h2>
             <p id="chatSubtitle">Все участники видят сообщения</p>
         </div>
@@ -602,9 +616,13 @@
     let socket = null;
     let currentUser = '';
     let userBio = '';
-    let currentChat = 'all'; // 'all' или имя пользователя
+    let currentChat = 'all';
+    let allUsers = [];
     let onlineUsers = [];
-    let chatsList = [];
+    let userChats = [];
+    let notificationsEnabled = true;
+    let unreadCount = 0;
+    let originalTitle = document.title;
     
     // DOM элементы
     const messagesArea = document.getElementById('messagesArea');
@@ -620,6 +638,7 @@
     const closeModalBtn = document.getElementById('closeModalBtn');
     const avatar = document.getElementById('avatar');
     const profileNameSpan = document.getElementById('profileName');
+    const profileBioSpan = document.getElementById('profileBio');
     const chatTitle = document.getElementById('chatTitle');
     const chatSubtitle = document.getElementById('chatSubtitle');
     const usersListDiv = document.getElementById('usersList');
@@ -628,8 +647,43 @@
     const mobileMenuBtn = document.getElementById('mobileMenuBtn');
     const menuOverlay = document.getElementById('menuOverlay');
     const sidebar = document.getElementById('sidebar');
+    const newChatInput = document.getElementById('newChatInput');
+    const createChatBtn = document.getElementById('createChatBtn');
+    const publicChatBtn = document.getElementById('publicChatBtn');
 
-    // ========== ФУНКЦИИ ТЕМЫ ==========
+    // ========== УВЕДОМЛЕНИЯ ==========
+    async function requestNotificationPermission() {
+        if (!('Notification' in window)) return;
+        if (Notification.permission === 'granted') return;
+        if (Notification.permission !== 'denied') {
+            await Notification.requestPermission();
+        }
+    }
+
+    function showNotification(title, body) {
+        if (!notificationsEnabled) return;
+        if (document.hasFocus()) return;
+        if (Notification.permission === 'granted') {
+            new Notification(title, { body: body });
+        }
+    }
+
+    function updateUnreadCount() {
+        if (!document.hasFocus()) {
+            unreadCount++;
+            document.title = `(${unreadCount}) Modern Messenger`;
+        }
+    }
+
+    function resetUnreadCount() {
+        unreadCount = 0;
+        document.title = originalTitle;
+    }
+
+    window.addEventListener('focus', resetUnreadCount);
+    requestNotificationPermission();
+
+    // ========== ТЕМА ==========
     function applyTheme(color) {
         document.documentElement.style.setProperty('--accent', `linear-gradient(135deg, ${color}, ${color}cc)`);
         document.documentElement.style.setProperty('--message-own', `linear-gradient(135deg, ${color}, ${color}cc)`);
@@ -646,7 +700,7 @@
         }
     }
 
-    // ========== ВРЕМЯ ПО МСК ==========
+    // ========== ВРЕМЯ ==========
     function getMskTime() {
         const now = new Date();
         const mskOffset = 3 * 60 * 60 * 1000;
@@ -669,6 +723,7 @@
         const initial = currentUser ? currentUser.charAt(0).toUpperCase() : 'U';
         avatar.textContent = initial;
         profileNameSpan.textContent = currentUser || 'Пользователь';
+        profileBioSpan.textContent = userBio || '';
     }
 
     function saveProfile() {
@@ -684,7 +739,7 @@
         updateProfileUI();
         profileModal.classList.remove('active');
         if (socket && socket.connected) {
-            socket.emit('register', { username: currentUser, color: colorPicker.value });
+            socket.emit('register', { username: currentUser, color: colorPicker.value, bio: userBio });
         }
     }
 
@@ -766,13 +821,18 @@
     // ========== СПИСКИ ==========
     function renderUsersList() {
         usersListDiv.innerHTML = '';
-        onlineUsers.forEach(user => {
+        allUsers.forEach(user => {
             if (user === currentUser) return;
+            const isOnline = onlineUsers.includes(user);
             const div = document.createElement('div');
             div.className = `user-item ${currentChat === user ? 'active' : ''}`;
             div.innerHTML = `
-                <div class="user-avatar" style="background: #667eea">${user.charAt(0).toUpperCase()}</div>
-                <div class="user-name">${escapeHtml(user)}</div>
+                <div class="item-avatar" style="background: #667eea">${user.charAt(0).toUpperCase()}</div>
+                <div class="item-name">
+                    ${escapeHtml(user)}
+                    ${isOnline ? '<span class="online-dot"></span>' : ''}
+                </div>
+                <div class="item-status">${isOnline ? 'онлайн' : 'офлайн'}</div>
             `;
             div.onclick = () => {
                 currentChat = user;
@@ -782,10 +842,7 @@
                 socket.emit('get_chat_history', user);
                 renderUsersList();
                 renderChatsList();
-                if (window.innerWidth <= 768) {
-                    sidebar.classList.remove('open');
-                    menuOverlay.classList.remove('open');
-                }
+                closeMobileMenu();
             };
             usersListDiv.appendChild(div);
         });
@@ -793,12 +850,16 @@
 
     function renderChatsList() {
         chatsListDiv.innerHTML = '';
-        chatsList.forEach(chat => {
+        if (userChats.length === 0) {
+            chatsListDiv.innerHTML = '<div style="padding: 12px; color: var(--text-secondary); font-size: 0.75rem;">Нет чатов</div>';
+            return;
+        }
+        userChats.forEach(chat => {
             const div = document.createElement('div');
             div.className = `chat-item ${currentChat === chat.with ? 'active' : ''}`;
             div.innerHTML = `
-                <div class="user-avatar" style="background: #764ba2">${chat.with.charAt(0).toUpperCase()}</div>
-                <div class="user-name">${escapeHtml(chat.with)}</div>
+                <div class="item-avatar" style="background: #764ba2">${chat.with.charAt(0).toUpperCase()}</div>
+                <div class="item-name">${escapeHtml(chat.with)}</div>
             `;
             div.onclick = () => {
                 currentChat = chat.with;
@@ -808,10 +869,7 @@
                 socket.emit('get_chat_history', chat.with);
                 renderUsersList();
                 renderChatsList();
-                if (window.innerWidth <= 768) {
-                    sidebar.classList.remove('open');
-                    menuOverlay.classList.remove('open');
-                }
+                closeMobileMenu();
             };
             chatsListDiv.appendChild(div);
         });
@@ -826,22 +884,61 @@
         renderChatsList();
     }
 
+    function closeMobileMenu() {
+        if (window.innerWidth <= 768) {
+            sidebar.classList.remove('open');
+            menuOverlay.classList.remove('open');
+        }
+    }
+
+    // ========== СОЗДАНИЕ ЧАТА ==========
+    function createNewChat() {
+        const targetUser = newChatInput.value.trim();
+        if (!targetUser) {
+            alert('Введите имя пользователя');
+            return;
+        }
+        if (targetUser === currentUser) {
+            alert('Нельзя создать чат с самим собой');
+            return;
+        }
+        socket.emit('create_chat', targetUser);
+        newChatInput.value = '';
+        alert(`Чат с ${targetUser} создан`);
+    }
+
     // ========== СОКЕТ ==========
     function initSocket() {
         socket = io();
         
         socket.on('connect', () => {
-            socket.emit('register', { username: currentUser, color: colorPicker.value });
+            socket.emit('register', { username: currentUser, color: colorPicker.value, bio: userBio });
+        });
+        
+        socket.on('all_users', (users) => {
+            allUsers = users;
+            renderUsersList();
+        });
+        
+        socket.on('online_users', (users) => {
+            onlineUsers = users;
+            renderUsersList();
         });
         
         socket.on('history', (msgs) => {
-            clearMessages();
-            msgs.forEach(msg => addMessageToUI(msg, msg.from === currentUser));
+            if (currentChat === 'all') {
+                clearMessages();
+                msgs.forEach(msg => addMessageToUI(msg, msg.from === currentUser));
+            }
         });
         
         socket.on('message', (msg) => {
             if (currentChat === 'all') {
                 addMessageToUI(msg, msg.from === currentUser);
+                if (msg.from !== currentUser && !document.hasFocus()) {
+                    showNotification(msg.from, msg.text);
+                    updateUnreadCount();
+                }
             }
         });
         
@@ -849,7 +946,10 @@
             if (currentChat === msg.from || currentChat === msg.to) {
                 addMessageToUI(msg, msg.from === currentUser);
             }
-            // Обновляем список чатов
+            if (msg.from !== currentUser && !document.hasFocus()) {
+                showNotification(msg.from, msg.text);
+                updateUnreadCount();
+            }
             socket.emit('get_chats');
         });
         
@@ -861,13 +961,17 @@
         });
         
         socket.on('chats_list', (chats) => {
-            chatsList = chats;
+            userChats = chats;
             renderChatsList();
         });
         
-        socket.on('user_list', (users) => {
-            onlineUsers = users;
-            renderUsersList();
+        socket.on('new_chat', (data) => {
+            socket.emit('get_chats');
+        });
+        
+        socket.on('chat_created', (data) => {
+            socket.emit('get_chats');
+            alert(`Чат с ${data.with} создан. Теперь вы можете обмениваться сообщениями.`);
         });
         
         socket.on('user_joined', (text) => {
@@ -938,7 +1042,13 @@
         saveProfileBtn.onclick = saveProfile;
         closeModalBtn.onclick = () => profileModal.classList.remove('active');
         
-        // Мобильное меню
+        createChatBtn.onclick = createNewChat;
+        newChatInput.onkeypress = (e) => {
+            if (e.key === 'Enter') createNewChat();
+        };
+        
+        publicChatBtn.onclick = updatePublicChat;
+        
         if (mobileMenuBtn) {
             mobileMenuBtn.onclick = () => {
                 sidebar.classList.toggle('open');
@@ -955,14 +1065,6 @@
         window.onclick = (e) => {
             if (e.target === profileModal) profileModal.classList.remove('active');
         };
-        
-        // Кнопка общего чата в заголовке
-        const chatHeader = document.querySelector('.chat-header');
-        if (chatHeader) {
-            chatHeader.onclick = () => {
-                updatePublicChat();
-            };
-        }
     }
 
     // ========== ЗАПУСК ==========
@@ -971,7 +1073,6 @@
     initSocket();
     setupEventHandlers();
     
-    // Запрос истории чатов
     setInterval(() => {
         if (socket && socket.connected) {
             socket.emit('get_chats');
