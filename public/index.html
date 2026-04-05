@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Modern Messenger</title>
     <style>
         * {
@@ -13,35 +13,80 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
-            background: #1a1a2e;
+            background: #0f0f1a;
             height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             overflow: hidden;
+            position: fixed;
+            width: 100%;
         }
 
         /* Основной контейнер */
         .app-container {
-            width: 100%;
-            max-width: 1400px;
-            height: 100vh;
-            background: #0f0f1a;
             display: flex;
-            box-shadow: 0 0 40px rgba(0,0,0,0.3);
+            height: 100%;
+            width: 100%;
+            position: relative;
         }
 
-        /* Боковая панель (список чатов/профиль) */
+        /* Боковая панель - десктопная версия */
         .sidebar {
             width: 320px;
             background: #1a1a2e;
             border-right: 1px solid #2a2a3e;
             display: flex;
             flex-direction: column;
-            backdrop-filter: blur(10px);
+            flex-shrink: 0;
+            transition: transform 0.3s ease;
+            z-index: 20;
         }
 
-        /* Шапка боковой панели */
+        /* Мобильное меню (выдвижное) */
+        .mobile-menu-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 25;
+            backdrop-filter: blur(4px);
+        }
+
+        .mobile-menu-overlay.active {
+            display: block;
+        }
+
+        .sidebar.mobile-open {
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            transform: translateX(0);
+            z-index: 30;
+            box-shadow: 4px 0 20px rgba(0,0,0,0.5);
+        }
+
+        /* Кнопка меню для мобильных */
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            width: 44px;
+            height: 44px;
+            background: #1a1a2e;
+            border: 1px solid #2a2a3e;
+            border-radius: 12px;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 15;
+            backdrop-filter: blur(10px);
+            color: white;
+            font-size: 1.4rem;
+        }
+
         .sidebar-header {
             padding: 24px 20px;
             border-bottom: 1px solid #2a2a3e;
@@ -55,7 +100,6 @@
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
-            letter-spacing: -0.5px;
         }
 
         .sidebar-header p {
@@ -64,7 +108,6 @@
             margin-top: 4px;
         }
 
-        /* Профиль пользователя */
         .profile-card {
             padding: 20px;
             background: #16162a;
@@ -78,7 +121,6 @@
         .profile-card:hover {
             background: #1e1e32;
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
         }
 
         .profile-info {
@@ -98,19 +140,21 @@
             font-size: 1.8rem;
             font-weight: 600;
             color: white;
-            box-shadow: 0 4px 12px rgba(102,126,234,0.3);
+            flex-shrink: 0;
         }
 
         .profile-details h3 {
             font-size: 1.1rem;
             font-weight: 600;
             color: #ffffff;
+            word-break: break-word;
         }
 
         .profile-details p {
             font-size: 0.8rem;
             color: #8a8aaa;
             margin-top: 4px;
+            word-break: break-word;
         }
 
         .profile-status {
@@ -137,24 +181,69 @@
             50% { opacity: 0.5; }
         }
 
-        /* Основная область чата */
+        .notification-toggle {
+            background: #16162a;
+            margin: 8px 16px 16px 16px;
+            padding: 12px 16px;
+            border-radius: 16px;
+            border: 1px solid #2a2a3e;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+        }
+
+        .notification-toggle:hover {
+            background: #1e1e32;
+        }
+
+        .notification-toggle .toggle-switch {
+            width: 44px;
+            height: 24px;
+            background: #2a2a3e;
+            border-radius: 24px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .notification-toggle .toggle-switch.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+
+        .notification-toggle .toggle-switch::after {
+            content: '';
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .notification-toggle .toggle-switch.active::after {
+            left: 22px;
+        }
+
+        /* Чат область */
         .chat-area {
             flex: 1;
             display: flex;
             flex-direction: column;
             background: #0f0f1a;
+            min-width: 0;
+            position: relative;
         }
 
-        /* Шапка чата */
         .chat-header {
-            padding: 20px 24px;
+            padding: 16px 20px;
             background: #1a1a2e;
             border-bottom: 1px solid #2a2a3e;
-            backdrop-filter: blur(10px);
         }
 
         .chat-header h2 {
-            font-size: 1.3rem;
+            font-size: 1.2rem;
             font-weight: 600;
             background: linear-gradient(135deg, #667eea, #764ba2);
             -webkit-background-clip: text;
@@ -162,40 +251,22 @@
             color: transparent;
         }
 
-        .chat-header p {
-            font-size: 0.8rem;
-            color: #6c6c8e;
-            margin-top: 4px;
-        }
-
-        /* Область сообщений */
         .messages-container {
             flex: 1;
             overflow-y: auto;
-            padding: 24px;
+            padding: 16px;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 8px;
+            -webkit-overflow-scrolling: touch;
         }
 
-        /* Стили сообщений */
         .message {
-            max-width: 65%;
-            padding: 10px 16px;
+            max-width: 85%;
+            padding: 8px 14px;
             border-radius: 18px;
             word-wrap: break-word;
-            animation: fadeIn 0.3s ease;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            animation: fadeIn 0.2s ease;
         }
 
         .message.own {
@@ -213,25 +284,25 @@
         }
 
         .message-username {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: 600;
             margin-bottom: 4px;
             opacity: 0.8;
         }
 
         .message-text {
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             line-height: 1.4;
+            word-break: break-word;
         }
 
         .message-time {
-            font-size: 0.65rem;
+            font-size: 0.6rem;
             text-align: right;
             margin-top: 6px;
             opacity: 0.6;
         }
 
-        /* Медиа в сообщениях */
         .message-media {
             margin-top: 8px;
             border-radius: 12px;
@@ -241,7 +312,7 @@
         .message-media img,
         .message-media video {
             max-width: 100%;
-            max-height: 250px;
+            max-height: 200px;
             border-radius: 12px;
             cursor: pointer;
         }
@@ -251,21 +322,20 @@
             align-items: center;
             gap: 8px;
             background: rgba(255,255,255,0.1);
-            padding: 8px 12px;
+            padding: 6px 10px;
             border-radius: 12px;
             text-decoration: none;
             color: inherit;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             margin-top: 8px;
         }
 
-        /* Область ввода */
         .input-area {
             background: #1a1a2e;
-            padding: 20px 24px;
+            padding: 12px 16px;
             border-top: 1px solid #2a2a3e;
             display: flex;
-            gap: 12px;
+            gap: 8px;
             align-items: flex-end;
         }
 
@@ -273,14 +343,12 @@
             flex: 1;
             background: #16162a;
             border-radius: 24px;
-            padding: 12px 18px;
+            padding: 10px 16px;
             border: 1px solid #2a2a3e;
-            transition: all 0.3s ease;
         }
 
         .input-wrapper:focus-within {
             border-color: #667eea;
-            box-shadow: 0 0 0 2px rgba(102,126,234,0.2);
         }
 
         #messageInput {
@@ -288,24 +356,20 @@
             background: transparent;
             border: none;
             color: white;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             font-family: inherit;
             resize: none;
             outline: none;
         }
 
-        #messageInput::placeholder {
-            color: #6c6c8e;
-        }
-
         .action-buttons {
             display: flex;
-            gap: 8px;
+            gap: 6px;
         }
 
         .action-btn {
-            width: 44px;
-            height: 44px;
+            width: 40px;
+            height: 40px;
             background: #16162a;
             border: 1px solid #2a2a3e;
             border-radius: 50%;
@@ -314,14 +378,7 @@
             align-items: center;
             justify-content: center;
             color: #8a8aaa;
-            transition: all 0.3s ease;
-        }
-
-        .action-btn:hover {
-            background: #1e1e32;
-            border-color: #667eea;
-            color: #667eea;
-            transform: scale(1.05);
+            font-size: 1.1rem;
         }
 
         .send-btn {
@@ -329,18 +386,13 @@
             border: none;
             color: white;
             font-weight: 600;
-            padding: 0 24px;
-            border-radius: 44px;
+            padding: 0 20px;
+            border-radius: 40px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            height: 40px;
         }
 
-        .send-btn:hover {
-            transform: scale(1.02);
-            box-shadow: 0 4px 12px rgba(102,126,234,0.4);
-        }
-
-        /* Модальное окно профиля */
+        /* Модальное окно */
         .modal {
             display: none;
             position: fixed;
@@ -348,11 +400,11 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.85);
             backdrop-filter: blur(8px);
             justify-content: center;
             align-items: center;
-            z-index: 1000;
+            z-index: 100;
         }
 
         .modal.active {
@@ -361,28 +413,15 @@
 
         .modal-content {
             background: #1a1a2e;
-            border-radius: 28px;
-            padding: 32px;
+            border-radius: 24px;
+            padding: 24px;
             width: 90%;
-            max-width: 500px;
-            border: 1px solid #2a2a3e;
-            animation: slideUp 0.3s ease;
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            max-width: 400px;
         }
 
         .modal-content h3 {
-            font-size: 1.5rem;
-            margin-bottom: 24px;
+            font-size: 1.3rem;
+            margin-bottom: 20px;
             background: linear-gradient(135deg, #667eea, #764ba2);
             -webkit-background-clip: text;
             background-clip: text;
@@ -390,48 +429,41 @@
         }
 
         .modal-field {
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         }
 
         .modal-field label {
             display: block;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: #8a8aaa;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
 
         .modal-field input,
         .modal-field textarea {
             width: 100%;
-            padding: 12px 16px;
+            padding: 10px 14px;
             background: #16162a;
             border: 1px solid #2a2a3e;
-            border-radius: 16px;
+            border-radius: 14px;
             color: white;
             font-family: inherit;
-            font-size: 0.95rem;
-        }
-
-        .modal-field input:focus,
-        .modal-field textarea:focus {
-            outline: none;
-            border-color: #667eea;
+            font-size: 0.9rem;
         }
 
         .modal-buttons {
             display: flex;
             gap: 12px;
-            margin-top: 24px;
+            margin-top: 20px;
         }
 
         .modal-buttons button {
             flex: 1;
-            padding: 12px;
-            border-radius: 16px;
+            padding: 10px;
+            border-radius: 14px;
             border: none;
             cursor: pointer;
             font-weight: 600;
-            transition: all 0.3s ease;
         }
 
         .save-btn {
@@ -444,18 +476,29 @@
             color: #8a8aaa;
         }
 
-        /* Системные сообщения */
         .system-message {
             text-align: center;
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             color: #6c6c8e;
-            padding: 8px;
-            margin: 8px auto;
+            padding: 6px;
+            margin: 4px auto;
+        }
+
+        .permission-request {
+            background: #16162a;
+            margin: 8px 16px;
+            padding: 10px;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 0.7rem;
+            color: #ffaa44;
+            border: 1px solid #ffaa44;
+            cursor: pointer;
         }
 
         /* Скроллбар */
         .messages-container::-webkit-scrollbar {
-            width: 6px;
+            width: 4px;
         }
 
         .messages-container::-webkit-scrollbar-track {
@@ -464,23 +507,88 @@
 
         .messages-container::-webkit-scrollbar-thumb {
             background: #2a2a3e;
-            border-radius: 3px;
+            border-radius: 4px;
         }
 
-        /* Адаптивность */
+        /* Мобильные стили */
         @media (max-width: 768px) {
-            .sidebar {
-                width: 280px;
+            .mobile-menu-btn {
+                display: flex;
             }
+            
+            .sidebar {
+                position: fixed;
+                left: 0;
+                top: 0;
+                bottom: 0;
+                transform: translateX(-100%);
+                width: 280px;
+                z-index: 30;
+            }
+            
+            .chat-header {
+                padding: 12px 16px;
+                padding-left: 60px;
+            }
+            
+            .chat-header h2 {
+                font-size: 1rem;
+            }
+            
+            .messages-container {
+                padding: 12px;
+            }
+            
             .message {
-                max-width: 85%;
+                max-width: 90%;
+                padding: 8px 12px;
+            }
+            
+            .message-text {
+                font-size: 0.85rem;
+            }
+            
+            .input-area {
+                padding: 10px 12px;
+            }
+            
+            .action-btn {
+                width: 36px;
+                height: 36px;
+                font-size: 1rem;
+            }
+            
+            .send-btn {
+                padding: 0 16px;
+                height: 36px;
+                font-size: 0.85rem;
+            }
+            
+            .profile-card {
+                margin: 12px;
+                padding: 14px;
+            }
+            
+            .profile-avatar {
+                width: 48px;
+                height: 48px;
+                font-size: 1.4rem;
+            }
+            
+            .profile-details h3 {
+                font-size: 1rem;
             }
         }
     </style>
 </head>
 <body>
+
+<!-- Кнопка меню для телефона -->
+<button class="mobile-menu-btn" id="mobileMenuBtn">☰</button>
+<div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
+
 <div class="app-container">
-    <div class="sidebar">
+    <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <h1>Modern Messenger</h1>
             <p>Связь без границ</p>
@@ -495,13 +603,19 @@
                 </div>
             </div>
         </div>
+        <div class="notification-toggle" id="notificationToggle">
+            <span>Уведомления</span>
+            <div class="toggle-switch" id="toggleSwitch"></div>
+        </div>
+        <div class="permission-request" id="permissionRequest" style="display: none;">
+            Нажмите, чтобы включить уведомления
+        </div>
         <div style="flex:1"></div>
     </div>
 
     <div class="chat-area">
         <div class="chat-header">
             <h2>Общий чат</h2>
-            <p>Все участники видят сообщения</p>
         </div>
         <div class="messages-container" id="messagesContainer">
             <div class="system-message">Добро пожаловать в Modern Messenger</div>
@@ -511,15 +625,14 @@
                 <textarea id="messageInput" rows="1" placeholder="Введите сообщение..."></textarea>
             </div>
             <div class="action-buttons">
-                <button class="action-btn" id="fileBtn" title="Прикрепить файл">📎</button>
-                <button class="action-btn" id="imageBtn" title="Фото или видео">🖼️</button>
+                <button class="action-btn" id="fileBtn">📎</button>
+                <button class="action-btn" id="imageBtn">🖼️</button>
                 <button class="send-btn" id="sendBtn">Отправить</button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Модальное окно профиля -->
 <div class="modal" id="profileModal">
     <div class="modal-content">
         <h3>Редактирование профиля</h3>
@@ -548,7 +661,12 @@
     let currentUser = '';
     let userAvatarColor = '#667eea';
     let userBio = '';
+    let notificationsEnabled = false;
+    let notificationPermissionGranted = false;
+    let unreadCount = 0;
+    let originalTitle = document.title;
 
+    // DOM элементы
     const messagesContainer = document.getElementById('messagesContainer');
     const messageInput = document.getElementById('messageInput');
     const sendBtn = document.getElementById('sendBtn');
@@ -564,12 +682,56 @@
     const avatarDisplay = document.getElementById('avatarDisplay');
     const profileNameSpan = document.getElementById('profileName');
     const profileBioSpan = document.getElementById('profileBio');
+    const notificationToggle = document.getElementById('notificationToggle');
+    const toggleSwitch = document.getElementById('toggleSwitch');
+    const permissionRequest = document.getElementById('permissionRequest');
+    
+    // Мобильное меню
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+    const sidebar = document.getElementById('sidebar');
 
-    // Загрузка профиля из localStorage
+    function closeMobileMenu() {
+        sidebar.classList.remove('mobile-open');
+        mobileMenuOverlay.classList.remove('active');
+    }
+
+    function openMobileMenu() {
+        sidebar.classList.add('mobile-open');
+        mobileMenuOverlay.classList.add('active');
+    }
+
+    if (mobileMenuBtn) {
+        mobileMenuBtn.onclick = openMobileMenu;
+    }
+    
+    if (mobileMenuOverlay) {
+        mobileMenuOverlay.onclick = closeMobileMenu;
+    }
+
+    // Закрываем меню при клике на профиль (на телефоне)
+    profileCard.onclick = () => {
+        if (window.innerWidth <= 768) {
+            closeMobileMenu();
+        }
+        editName.value = currentUser;
+        editBio.value = userBio;
+        editColor.value = userAvatarColor;
+        profileModal.classList.add('active');
+    };
+
+    function getMskTime() {
+        const now = new Date();
+        const mskOffset = 3 * 60 * 60 * 1000;
+        const mskTime = new Date(now.getTime() + mskOffset);
+        return mskTime.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+    }
+
     function loadProfile() {
         const savedName = localStorage.getItem('profile_name');
         const savedBio = localStorage.getItem('profile_bio');
         const savedColor = localStorage.getItem('profile_color');
+        const savedNotifications = localStorage.getItem('notifications_enabled');
         
         if (savedName) {
             currentUser = savedName;
@@ -586,12 +748,15 @@
             editColor.value = savedColor;
             avatarDisplay.style.background = userAvatarColor;
         }
+        if (savedNotifications === 'true') {
+            notificationsEnabled = true;
+            toggleSwitch.classList.add('active');
+        }
         
         const initial = currentUser ? currentUser.charAt(0).toUpperCase() : 'U';
         avatarDisplay.textContent = initial;
     }
 
-    // Сохранение профиля
     function saveProfile() {
         const newName = editName.value.trim();
         if (!newName) {
@@ -614,54 +779,106 @@
         
         profileModal.classList.remove('active');
         
-        // Переподключение с новым именем
         if (socket && socket.connected) {
             socket.emit('register', currentUser);
         }
     }
 
-    // Открыть модальное окно
-    profileCard.onclick = () => {
-        editName.value = currentUser;
-        editBio.value = userBio;
-        editColor.value = userAvatarColor;
-        profileModal.classList.add('active');
-    };
+    async function requestNotificationPermission() {
+        if (!('Notification' in window)) return false;
+        if (Notification.permission === 'granted') {
+            notificationPermissionGranted = true;
+            permissionRequest.style.display = 'none';
+            return true;
+        }
+        if (Notification.permission !== 'denied') {
+            const permission = await Notification.requestPermission();
+            notificationPermissionGranted = permission === 'granted';
+            if (notificationPermissionGranted) permissionRequest.style.display = 'none';
+            return notificationPermissionGranted;
+        }
+        permissionRequest.style.display = 'block';
+        return false;
+    }
+
+    function showNotification(title, body, tag) {
+        if (!notificationsEnabled || !notificationPermissionGranted) return;
+        if (document.hasFocus()) return;
+        try {
+            const notification = new Notification(title, {
+                body: body,
+                silent: false,
+                tag: tag || 'message'
+            });
+            notification.onclick = () => { window.focus(); notification.close(); };
+            setTimeout(() => notification.close(), 5000);
+        } catch(e) {}
+    }
+
+    function updateUnreadCount() {
+        if (!document.hasFocus()) {
+            unreadCount++;
+            document.title = `(${unreadCount}) Modern Messenger`;
+        }
+    }
+
+    function resetUnreadCount() {
+        unreadCount = 0;
+        document.title = originalTitle;
+    }
+
+    window.addEventListener('focus', resetUnreadCount);
 
     saveProfileBtn.onclick = saveProfile;
     closeModalBtn.onclick = () => profileModal.classList.remove('active');
 
-    // Инициализация
-    loadProfile();
+    notificationToggle.onclick = async () => {
+        if (!notificationPermissionGranted) {
+            const granted = await requestNotificationPermission();
+            if (!granted) {
+                alert('Разрешите уведомления в настройках браузера');
+                return;
+            }
+        }
+        notificationsEnabled = !notificationsEnabled;
+        if (notificationsEnabled) {
+            toggleSwitch.classList.add('active');
+            localStorage.setItem('notifications_enabled', 'true');
+        } else {
+            toggleSwitch.classList.remove('active');
+            localStorage.setItem('notifications_enabled', 'false');
+        }
+    };
 
-    // Подключение к сокету
+    permissionRequest.onclick = async () => { await requestNotificationPermission(); };
+
     function initSocket() {
         socket = io();
-        
-        socket.on('connect', () => {
-            socket.emit('register', currentUser);
-        });
-        
+        socket.on('connect', () => { socket.emit('register', currentUser); });
         socket.on('history', (msgs) => {
             messagesContainer.innerHTML = '';
             if (msgs.length === 0) {
                 messagesContainer.innerHTML = '<div class="system-message">Добро пожаловать в Modern Messenger</div>';
             }
             msgs.forEach(msg => addMessageToUI(msg, msg.username === currentUser));
+            resetUnreadCount();
         });
-        
         socket.on('message', (msg) => {
-            addMessageToUI(msg, msg.username === currentUser);
+            const isOwn = msg.username === currentUser;
+            addMessageToUI(msg, isOwn);
+            if (!isOwn && !document.hasFocus()) {
+                showNotification(msg.username, msg.text || 'Отправил(а) файл', msg.id);
+                updateUnreadCount();
+            }
         });
-        
         socket.on('user_joined', (text) => {
             const sysDiv = document.createElement('div');
             sysDiv.className = 'system-message';
             sysDiv.textContent = text;
             messagesContainer.appendChild(sysDiv);
             setTimeout(() => sysDiv.remove(), 4000);
+            if (!document.hasFocus()) showNotification('Modern Messenger', text, 'system');
         });
-        
         socket.on('user_left', (text) => {
             const sysDiv = document.createElement('div');
             sysDiv.className = 'system-message';
@@ -674,14 +891,9 @@
     function addMessageToUI(msg, isOwn) {
         const div = document.createElement('div');
         div.className = `message ${isOwn ? 'own' : 'other'}`;
-        
         let content = '';
-        if (!isOwn) {
-            content += `<div class="message-username">${msg.username}</div>`;
-        }
-        if (msg.text) {
-            content += `<div class="message-text">${escapeHtml(msg.text)}</div>`;
-        }
+        if (!isOwn) content += `<div class="message-username">${escapeHtml(msg.username)}</div>`;
+        if (msg.text) content += `<div class="message-text">${escapeHtml(msg.text)}</div>`;
         if (msg.files && msg.files.length) {
             msg.files.forEach(file => {
                 const url = file.url;
@@ -694,7 +906,7 @@
                 }
             });
         }
-        content += `<div class="message-time">${msg.time}</div>`;
+        content += `<div class="message-time">${msg.time || getMskTime()}</div>`;
         div.innerHTML = content;
         messagesContainer.appendChild(div);
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
@@ -713,7 +925,6 @@
     async function sendWithFiles(files) {
         const text = messageInput.value.trim();
         if (!text && !files.length) return;
-        
         const uploadedFiles = [];
         for (const file of files) {
             const formData = new FormData();
@@ -722,11 +933,7 @@
             const data = await res.json();
             uploadedFiles.push({ url: data.url, name: data.name });
         }
-        
-        socket.emit('message', {
-            text: text,
-            files: uploadedFiles
-        });
+        socket.emit('message', { text: text, files: uploadedFiles, time: getMskTime() });
         messageInput.value = '';
         messageInput.style.height = 'auto';
     }
@@ -738,10 +945,9 @@
             sendWithFiles([]);
         }
     };
-    
     messageInput.addEventListener('input', function() {
         this.style.height = 'auto';
-        this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+        this.style.height = Math.min(this.scrollHeight, 100) + 'px';
     });
     
     fileBtn.onclick = () => {
@@ -751,7 +957,6 @@
         input.onchange = (e) => sendWithFiles(Array.from(e.target.files));
         input.click();
     };
-    
     imageBtn.onclick = () => {
         const input = document.createElement('input');
         input.type = 'file';
@@ -761,13 +966,12 @@
         input.click();
     };
     
+    loadProfile();
+    requestNotificationPermission();
     initSocket();
     
-    // Закрытие модального окна по клику вне
     window.onclick = (e) => {
-        if (e.target === profileModal) {
-            profileModal.classList.remove('active');
-        }
+        if (e.target === profileModal) profileModal.classList.remove('active');
     };
 </script>
 </body>
