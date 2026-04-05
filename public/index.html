@@ -40,7 +40,7 @@
 
         /* Боковая панель */
         .sidebar {
-            width: 300px;
+            width: 320px;
             background: var(--bg-secondary);
             border-right: 1px solid var(--border-color);
             display: flex;
@@ -103,19 +103,18 @@
             color: var(--text-secondary);
         }
 
-        /* Создание чата */
-        .create-chat {
+        /* Создание группы */
+        .create-group {
             padding: 12px;
             margin: 8px 12px;
             background: var(--bg-tertiary);
             border-radius: 12px;
-            display: flex;
-            gap: 8px;
         }
 
-        .create-chat input {
-            flex: 1;
+        .create-group input {
+            width: 100%;
             padding: 10px;
+            margin-bottom: 8px;
             background: var(--bg-primary);
             border: 1px solid var(--border-color);
             border-radius: 12px;
@@ -123,8 +122,9 @@
             font-size: 0.85rem;
         }
 
-        .create-chat button {
-            padding: 10px 16px;
+        .create-group button {
+            width: 100%;
+            padding: 10px;
             background: #667eea;
             border: none;
             border-radius: 12px;
@@ -141,7 +141,7 @@
         }
 
         .chats-list, .users-list {
-            max-height: 200px;
+            max-height: 250px;
             overflow-y: auto;
         }
 
@@ -165,8 +165,8 @@
         }
 
         .item-avatar {
-            width: 36px;
-            height: 36px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -177,15 +177,33 @@
             flex-shrink: 0;
         }
 
-        .item-name {
-            flex: 1;
-            font-size: 0.85rem;
-            color: var(--text-primary);
+        .group-avatar {
+            background: #764ba2;
         }
 
-        .item-status {
+        .private-avatar {
+            background: #667eea;
+        }
+
+        .item-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .item-name {
+            font-size: 0.85rem;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .item-preview {
             font-size: 0.65rem;
             color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .online-dot {
@@ -234,6 +252,9 @@
             background: var(--bg-secondary);
             border-bottom: 1px solid var(--border-color);
             flex-shrink: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .chat-header h2 {
@@ -245,6 +266,21 @@
             font-size: 0.7rem;
             color: var(--text-secondary);
             margin-top: 4px;
+        }
+
+        .chat-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .chat-action-btn {
+            padding: 6px 12px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            color: var(--text-secondary);
+            font-size: 0.7rem;
+            cursor: pointer;
         }
 
         /* Область сообщений */
@@ -393,7 +429,7 @@
             margin: 4px auto;
         }
 
-        /* Модальное окно */
+        /* Модальные окна */
         .modal {
             display: none;
             position: fixed;
@@ -418,6 +454,8 @@
             padding: 24px;
             width: 90%;
             max-width: 380px;
+            max-height: 80vh;
+            overflow-y: auto;
         }
 
         .modal-content h3 {
@@ -438,7 +476,8 @@
         }
 
         .modal-field input,
-        .modal-field textarea {
+        .modal-field textarea,
+        .modal-field select {
             width: 100%;
             padding: 10px 14px;
             background: var(--bg-tertiary);
@@ -447,6 +486,30 @@
             color: var(--text-primary);
             font-family: inherit;
             font-size: 0.85rem;
+        }
+
+        .participant-list {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-bottom: 16px;
+        }
+
+        .participant-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .participant-item:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .participant-item input {
+            width: 18px;
+            height: 18px;
         }
 
         .modal-buttons {
@@ -472,10 +535,6 @@
         .cancel-btn {
             background: var(--bg-tertiary);
             color: var(--text-secondary);
-        }
-
-        .scroll {
-            overflow-y: auto;
         }
 
         /* Мобильная версия */
@@ -530,6 +589,9 @@
             .input-area {
                 padding-bottom: env(safe-area-inset-bottom, 12px);
             }
+            .message {
+                max-width: 85%;
+            }
         }
 
         @media (min-width: 769px) {
@@ -558,12 +620,12 @@
             </div>
         </div>
 
-        <div class="create-chat">
-            <input type="text" id="newChatInput" placeholder="Имя пользователя">
-            <button id="createChatBtn">Создать чат</button>
+        <div class="create-group">
+            <input type="text" id="groupNameInput" placeholder="Название группы">
+            <button id="createGroupBtn">➕ Создать группу</button>
         </div>
 
-        <div class="section-title">Личные чаты</div>
+        <div class="section-title">Чаты</div>
         <div class="chats-list" id="chatsList"></div>
 
         <div class="section-title">Пользователи</div>
@@ -577,8 +639,14 @@
 
     <div class="chat-main">
         <div class="chat-header" id="publicChatBtn">
-            <h2 id="chatTitle">Общий чат</h2>
-            <p id="chatSubtitle">Все участники видят сообщения</p>
+            <div>
+                <h2 id="chatTitle">Общий чат</h2>
+                <p id="chatSubtitle">Все участники видят сообщения</p>
+            </div>
+            <div class="chat-actions" id="chatActions" style="display: none;">
+                <button class="chat-action-btn" id="addMemberBtn">➕ Добавить</button>
+                <button class="chat-action-btn" id="infoBtn">ℹ️ Инфо</button>
+            </div>
         </div>
         <div class="messages-area" id="messagesArea"></div>
         <div class="input-area">
@@ -592,6 +660,7 @@
     </div>
 </div>
 
+<!-- Модальное окно профиля -->
 <div class="modal" id="profileModal">
     <div class="modal-content">
         <h3>Редактирование профиля</h3>
@@ -610,13 +679,59 @@
     </div>
 </div>
 
+<!-- Модальное окно создания группы -->
+<div class="modal" id="createGroupModal">
+    <div class="modal-content">
+        <h3>Создание группы</h3>
+        <div class="modal-field">
+            <label>Название группы</label>
+            <input type="text" id="modalGroupName" maxlength="50">
+        </div>
+        <div class="modal-field">
+            <label>Выберите участников</label>
+            <div class="participant-list" id="participantList"></div>
+        </div>
+        <div class="modal-buttons">
+            <button class="cancel-btn" id="closeGroupModalBtn">Отмена</button>
+            <button class="save-btn" id="confirmCreateGroupBtn">Создать</button>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно добавления участника -->
+<div class="modal" id="addMemberModal">
+    <div class="modal-content">
+        <h3>Добавить участника</h3>
+        <div class="modal-field">
+            <label>Выберите пользователя</label>
+            <div class="participant-list" id="addMemberList"></div>
+        </div>
+        <div class="modal-buttons">
+            <button class="cancel-btn" id="closeAddMemberBtn">Отмена</button>
+            <button class="save-btn" id="confirmAddMemberBtn">Добавить</button>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно информации о чате -->
+<div class="modal" id="chatInfoModal">
+    <div class="modal-content">
+        <h3 id="infoModalTitle">Информация</h3>
+        <div id="infoModalContent"></div>
+        <div class="modal-buttons">
+            <button class="cancel-btn" id="closeInfoModalBtn">Закрыть</button>
+        </div>
+    </div>
+</div>
+
 <script src="/socket.io/socket.io.js"></script>
 <script>
     // ========== ПЕРЕМЕННЫЕ ==========
     let socket = null;
     let currentUser = '';
     let userBio = '';
-    let currentChat = 'all';
+    let currentChatId = 'public';
+    let currentChatInfo = null;
     let allUsers = [];
     let onlineUsers = [];
     let userChats = [];
@@ -647,9 +762,27 @@
     const mobileMenuBtn = document.getElementById('mobileMenuBtn');
     const menuOverlay = document.getElementById('menuOverlay');
     const sidebar = document.getElementById('sidebar');
-    const newChatInput = document.getElementById('newChatInput');
-    const createChatBtn = document.getElementById('createChatBtn');
     const publicChatBtn = document.getElementById('publicChatBtn');
+    const createGroupBtn = document.getElementById('createGroupBtn');
+    const groupNameInput = document.getElementById('groupNameInput');
+    const chatActions = document.getElementById('chatActions');
+    const addMemberBtn = document.getElementById('addMemberBtn');
+    const infoBtn = document.getElementById('infoBtn');
+    
+    // Модальные окна
+    const createGroupModal = document.getElementById('createGroupModal');
+    const addMemberModal = document.getElementById('addMemberModal');
+    const chatInfoModal = document.getElementById('chatInfoModal');
+    const modalGroupName = document.getElementById('modalGroupName');
+    const participantList = document.getElementById('participantList');
+    const addMemberList = document.getElementById('addMemberList');
+    const closeGroupModalBtn = document.getElementById('closeGroupModalBtn');
+    const confirmCreateGroupBtn = document.getElementById('confirmCreateGroupBtn');
+    const closeAddMemberBtn = document.getElementById('closeAddMemberBtn');
+    const confirmAddMemberBtn = document.getElementById('confirmAddMemberBtn');
+    const closeInfoModalBtn = document.getElementById('closeInfoModalBtn');
+    const infoModalTitle = document.getElementById('infoModalTitle');
+    const infoModalContent = document.getElementById('infoModalContent');
 
     // ========== УВЕДОМЛЕНИЯ ==========
     async function requestNotificationPermission() {
@@ -744,18 +877,18 @@
     }
 
     // ========== UI СООБЩЕНИЙ ==========
-    function addMessageToUI(msg, isOwn) {
+    function addMessageToUI(message, isOwn) {
         const div = document.createElement('div');
         div.className = `message ${isOwn ? 'own' : 'other'}`;
         let content = '';
-        if (!isOwn && msg.from !== 'all') {
-            content += `<div class="message-sender">${escapeHtml(msg.from)}</div>`;
+        if (!isOwn && message.from !== currentUser) {
+            content += `<div class="message-sender">${escapeHtml(message.from)}</div>`;
         }
-        if (msg.text) {
-            content += `<div class="message-text">${escapeHtml(msg.text)}</div>`;
+        if (message.text) {
+            content += `<div class="message-text">${escapeHtml(message.text)}</div>`;
         }
-        if (msg.files && msg.files.length) {
-            msg.files.forEach(file => {
+        if (message.files && message.files.length) {
+            message.files.forEach(file => {
                 const url = file.url;
                 if (url.match(/\.(jpg|jpeg|png|gif|webp)/i)) {
                     content += `<div class="message-media"><img src="${url}" alt="image" onclick="window.open(this.src)"></div>`;
@@ -766,7 +899,7 @@
                 }
             });
         }
-        content += `<div class="message-time">${msg.time || getMskTime()}</div>`;
+        content += `<div class="message-time">${message.time || getMskTime()}</div>`;
         div.innerHTML = content;
         messagesArea.appendChild(div);
         messagesArea.scrollTop = messagesArea.scrollHeight;
@@ -786,8 +919,8 @@
         if (!text) return;
         
         socket.emit('message', {
+            chatId: currentChatId,
             text: text,
-            to: currentChat === 'all' ? 'all' : currentChat,
             files: [],
             time: getMskTime()
         });
@@ -809,8 +942,8 @@
         }
         
         socket.emit('message', {
+            chatId: currentChatId,
             text: text,
-            to: currentChat === 'all' ? 'all' : currentChat,
             files: uploadedFiles,
             time: getMskTime()
         });
@@ -818,30 +951,44 @@
         messageInput.style.height = 'auto';
     }
 
-    // ========== СПИСКИ ==========
+    // ========== ОТОБРАЖЕНИЕ СПИСКОВ ==========
     function renderUsersList() {
         usersListDiv.innerHTML = '';
         allUsers.forEach(user => {
             if (user === currentUser) return;
             const isOnline = onlineUsers.includes(user);
             const div = document.createElement('div');
-            div.className = `user-item ${currentChat === user ? 'active' : ''}`;
+            div.className = 'user-item';
             div.innerHTML = `
-                <div class="item-avatar" style="background: #667eea">${user.charAt(0).toUpperCase()}</div>
-                <div class="item-name">
-                    ${escapeHtml(user)}
-                    ${isOnline ? '<span class="online-dot"></span>' : ''}
+                <div class="item-avatar private-avatar">${user.charAt(0).toUpperCase()}</div>
+                <div class="item-info">
+                    <div class="item-name">
+                        ${escapeHtml(user)}
+                        ${isOnline ? '<span class="online-dot"></span>' : ''}
+                    </div>
+                    <div class="item-preview">${isOnline ? 'онлайн' : 'офлайн'}</div>
                 </div>
-                <div class="item-status">${isOnline ? 'онлайн' : 'офлайн'}</div>
             `;
             div.onclick = () => {
-                currentChat = user;
-                chatTitle.textContent = user;
-                chatSubtitle.textContent = 'Личный чат';
-                clearMessages();
-                socket.emit('get_chat_history', user);
-                renderUsersList();
-                renderChatsList();
+                // Автоматически создаём личный чат при клике
+                const existingChat = userChats.find(c => c.name === user && c.type === 'private');
+                if (existingChat) {
+                    switchToChat(existingChat.id, existingChat);
+                } else {
+                    // Создаём новый чат отправкой сообщения
+                    currentChatId = null;
+                    chatTitle.textContent = user;
+                    chatSubtitle.textContent = 'Личный чат';
+                    clearMessages();
+                    // Отправляем первое сообщение для создания чата
+                    socket.emit('message', {
+                        chatId: 'temp',
+                        to: user,
+                        text: '',
+                        files: [],
+                        time: getMskTime()
+                    });
+                }
                 closeMobileMenu();
             };
             usersListDiv.appendChild(div);
@@ -855,33 +1002,58 @@
             return;
         }
         userChats.forEach(chat => {
+            const isActive = currentChatId === chat.id;
             const div = document.createElement('div');
-            div.className = `chat-item ${currentChat === chat.with ? 'active' : ''}`;
+            div.className = `chat-item ${isActive ? 'active' : ''}`;
+            const avatarClass = chat.type === 'group' ? 'group-avatar' : 'private-avatar';
+            const displayName = chat.type === 'group' ? chat.name : chat.name;
+            const lastText = chat.lastMessage ? (chat.lastMessage.text ? chat.lastMessage.text.substring(0, 30) : 'Файл') : 'Нет сообщений';
             div.innerHTML = `
-                <div class="item-avatar" style="background: #764ba2">${chat.with.charAt(0).toUpperCase()}</div>
-                <div class="item-name">${escapeHtml(chat.with)}</div>
+                <div class="item-avatar ${avatarClass}">${displayName.charAt(0).toUpperCase()}</div>
+                <div class="item-info">
+                    <div class="item-name">${escapeHtml(displayName)}</div>
+                    <div class="item-preview">${escapeHtml(lastText)}</div>
+                </div>
             `;
             div.onclick = () => {
-                currentChat = chat.with;
-                chatTitle.textContent = chat.with;
-                chatSubtitle.textContent = 'Личный чат';
-                clearMessages();
-                socket.emit('get_chat_history', chat.with);
-                renderUsersList();
-                renderChatsList();
+                switchToChat(chat.id, chat);
                 closeMobileMenu();
             };
             chatsListDiv.appendChild(div);
         });
     }
 
+    function switchToChat(chatId, chatInfo) {
+        currentChatId = chatId;
+        currentChatInfo = chatInfo;
+        const displayName = chatInfo.type === 'group' ? chatInfo.name : chatInfo.name;
+        chatTitle.textContent = displayName;
+        if (chatInfo.type === 'group') {
+            chatSubtitle.textContent = `Группа • ${chatInfo.participants ? chatInfo.participants.length : 0} участников`;
+            chatActions.style.display = 'flex';
+        } else if (chatInfo.type === 'private') {
+            const isOnline = onlineUsers.includes(chatInfo.name);
+            chatSubtitle.textContent = isOnline ? 'онлайн' : 'офлайн';
+            chatActions.style.display = 'none';
+        } else {
+            chatSubtitle.textContent = 'Все участники видят сообщения';
+            chatActions.style.display = 'none';
+        }
+        clearMessages();
+        socket.emit('get_chat_history', chatId);
+        renderChatsList();
+    }
+
     function updatePublicChat() {
-        currentChat = 'all';
+        currentChatId = 'public';
+        currentChatInfo = { type: 'public', name: 'Общий чат' };
         chatTitle.textContent = 'Общий чат';
         chatSubtitle.textContent = 'Все участники видят сообщения';
+        chatActions.style.display = 'none';
         clearMessages();
-        renderUsersList();
+        socket.emit('get_chat_history', 'public');
         renderChatsList();
+        closeMobileMenu();
     }
 
     function closeMobileMenu() {
@@ -891,20 +1063,95 @@
         }
     }
 
-    // ========== СОЗДАНИЕ ЧАТА ==========
-    function createNewChat() {
-        const targetUser = newChatInput.value.trim();
-        if (!targetUser) {
-            alert('Введите имя пользователя');
+    // ========== ГРУППЫ ==========
+    function openCreateGroupModal() {
+        modalGroupName.value = groupNameInput.value || '';
+        // Заполняем список пользователей
+        participantList.innerHTML = '';
+        allUsers.forEach(user => {
+            if (user === currentUser) return;
+            const div = document.createElement('div');
+            div.className = 'participant-item';
+            div.innerHTML = `
+                <input type="checkbox" value="${escapeHtml(user)}" id="user_${escapeHtml(user)}">
+                <label for="user_${escapeHtml(user)}">${escapeHtml(user)}</label>
+            `;
+            participantList.appendChild(div);
+        });
+        createGroupModal.classList.add('active');
+    }
+
+    function createGroup() {
+        const groupName = modalGroupName.value.trim();
+        if (!groupName) {
+            alert('Введите название группы');
             return;
         }
-        if (targetUser === currentUser) {
-            alert('Нельзя создать чат с самим собой');
-            return;
+        const selectedUsers = [];
+        const checkboxes = participantList.querySelectorAll('input[type="checkbox"]');
+        checkboxes.forEach(cb => {
+            if (cb.checked) {
+                selectedUsers.push(cb.value);
+            }
+        });
+        socket.emit('create_group', { name: groupName, participants: selectedUsers });
+        createGroupModal.classList.remove('active');
+        groupNameInput.value = '';
+    }
+
+    function openAddMemberModal() {
+        if (!currentChatInfo || currentChatInfo.type !== 'group') return;
+        addMemberList.innerHTML = '';
+        allUsers.forEach(user => {
+            if (user === currentUser) return;
+            if (currentChatInfo.participants && currentChatInfo.participants.includes(user)) return;
+            const div = document.createElement('div');
+            div.className = 'participant-item';
+            div.innerHTML = `
+                <input type="checkbox" value="${escapeHtml(user)}" id="add_${escapeHtml(user)}">
+                <label for="add_${escapeHtml(user)}">${escapeHtml(user)}</label>
+            `;
+            addMemberList.appendChild(div);
+        });
+        addMemberModal.classList.add('active');
+    }
+
+    function addMembersToGroup() {
+        const selectedUsers = [];
+        const checkboxes = addMemberList.querySelectorAll('input[type="checkbox"]');
+        checkboxes.forEach(cb => {
+            if (cb.checked) {
+                selectedUsers.push(cb.value);
+            }
+        });
+        selectedUsers.forEach(user => {
+            socket.emit('add_to_group', { chatId: currentChatId, username: user });
+        });
+        addMemberModal.classList.remove('active');
+    }
+
+    function openChatInfoModal() {
+        if (!currentChatInfo) return;
+        if (currentChatInfo.type === 'group') {
+            infoModalTitle.textContent = currentChatInfo.name;
+            infoModalContent.innerHTML = `
+                <p><strong>Тип:</strong> Группа</p>
+                <p><strong>Участники (${currentChatInfo.participants ? currentChatInfo.participants.length : 0}):</strong></p>
+                <ul style="margin-left: 20px; margin-top: 8px;">
+                    ${currentChatInfo.participants ? currentChatInfo.participants.map(p => `<li>${escapeHtml(p)}${p === currentUser ? ' (Вы)' : ''}${onlineUsers.includes(p) ? ' 🟢' : ' ⚫'}</li>`).join('') : ''}
+                </ul>
+                <p><strong>Создан:</strong> ${new Date(currentChatInfo.createdAt).toLocaleString()}</p>
+            `;
+        } else if (currentChatInfo.type === 'private') {
+            infoModalTitle.textContent = currentChatInfo.name;
+            const isOnline = onlineUsers.includes(currentChatInfo.name);
+            infoModalContent.innerHTML = `
+                <p><strong>Тип:</strong> Личный чат</p>
+                <p><strong>Собеседник:</strong> ${escapeHtml(currentChatInfo.name)}</p>
+                <p><strong>Статус:</strong> ${isOnline ? 'Онлайн 🟢' : 'Офлайн ⚫'}</p>
+            `;
         }
-        socket.emit('create_chat', targetUser);
-        newChatInput.value = '';
-        alert(`Чат с ${targetUser} создан`);
+        chatInfoModal.classList.add('active');
     }
 
     // ========== СОКЕТ ==========
@@ -923,41 +1170,43 @@
         socket.on('online_users', (users) => {
             onlineUsers = users;
             renderUsersList();
-        });
-        
-        socket.on('history', (msgs) => {
-            if (currentChat === 'all') {
-                clearMessages();
-                msgs.forEach(msg => addMessageToUI(msg, msg.from === currentUser));
+            if (currentChatInfo && currentChatInfo.type === 'private') {
+                const isOnline = onlineUsers.includes(currentChatInfo.name);
+                chatSubtitle.textContent = isOnline ? 'онлайн' : 'офлайн';
             }
         });
         
-        socket.on('message', (msg) => {
-            if (currentChat === 'all') {
-                addMessageToUI(msg, msg.from === currentUser);
-                if (msg.from !== currentUser && !document.hasFocus()) {
-                    showNotification(msg.from, msg.text);
-                    updateUnreadCount();
+        socket.on('history', (messages) => {
+            if (currentChatId === 'public') {
+                clearMessages();
+                messages.forEach(msg => addMessageToUI(msg, msg.from === currentUser));
+            }
+        });
+        
+        socket.on('chat_history', (data) => {
+            if (currentChatId === data.chatId) {
+                clearMessages();
+                data.messages.forEach(msg => addMessageToUI(msg, msg.from === currentUser));
+                if (data.chatInfo) {
+                    currentChatInfo = data.chatInfo;
+                    if (data.chatInfo.type === 'group') {
+                        chatSubtitle.textContent = `Группа • ${data.chatInfo.participants.length} участников`;
+                    }
                 }
             }
         });
         
-        socket.on('private_message', (msg) => {
-            if (currentChat === msg.from || currentChat === msg.to) {
-                addMessageToUI(msg, msg.from === currentUser);
+        socket.on('new_message', (data) => {
+            if (currentChatId === data.chatId) {
+                addMessageToUI(data.message, data.message.from === currentUser);
             }
-            if (msg.from !== currentUser && !document.hasFocus()) {
-                showNotification(msg.from, msg.text);
+            if (data.message.from !== currentUser && !document.hasFocus()) {
+                const chat = userChats.find(c => c.id === data.chatId);
+                const chatName = chat ? (chat.type === 'group' ? chat.name : chat.name) : 'Новое сообщение';
+                showNotification(chatName, data.message.text || 'Файл');
                 updateUnreadCount();
             }
             socket.emit('get_chats');
-        });
-        
-        socket.on('chat_history', (data) => {
-            if (currentChat === data.targetUser) {
-                clearMessages();
-                data.messages.forEach(msg => addMessageToUI(msg, msg.from === currentUser));
-            }
         });
         
         socket.on('chats_list', (chats) => {
@@ -965,13 +1214,21 @@
             renderChatsList();
         });
         
-        socket.on('new_chat', (data) => {
+        socket.on('group_created', (data) => {
+            alert(`Группа "${data.name}" создана!`);
             socket.emit('get_chats');
         });
         
-        socket.on('chat_created', (data) => {
+        socket.on('added_to_group', (data) => {
+            alert(`Вы добавлены в группу "${data.groupName}"`);
             socket.emit('get_chats');
-            alert(`Чат с ${data.with} создан. Теперь вы можете обмениваться сообщениями.`);
+        });
+        
+        socket.on('group_member_added', (data) => {
+            if (currentChatId === data.chatId) {
+                socket.emit('get_chat_history', currentChatId);
+            }
+            socket.emit('get_chats');
         });
         
         socket.on('user_joined', (text) => {
@@ -1042,12 +1299,18 @@
         saveProfileBtn.onclick = saveProfile;
         closeModalBtn.onclick = () => profileModal.classList.remove('active');
         
-        createChatBtn.onclick = createNewChat;
-        newChatInput.onkeypress = (e) => {
-            if (e.key === 'Enter') createNewChat();
-        };
-        
         publicChatBtn.onclick = updatePublicChat;
+        
+        createGroupBtn.onclick = openCreateGroupModal;
+        closeGroupModalBtn.onclick = () => createGroupModal.classList.remove('active');
+        confirmCreateGroupBtn.onclick = createGroup;
+        
+        addMemberBtn.onclick = openAddMemberModal;
+        closeAddMemberBtn.onclick = () => addMemberModal.classList.remove('active');
+        confirmAddMemberBtn.onclick = addMembersToGroup;
+        
+        infoBtn.onclick = openChatInfoModal;
+        closeInfoModalBtn.onclick = () => chatInfoModal.classList.remove('active');
         
         if (mobileMenuBtn) {
             mobileMenuBtn.onclick = () => {
@@ -1064,6 +1327,9 @@
         
         window.onclick = (e) => {
             if (e.target === profileModal) profileModal.classList.remove('active');
+            if (e.target === createGroupModal) createGroupModal.classList.remove('active');
+            if (e.target === addMemberModal) addMemberModal.classList.remove('active');
+            if (e.target === chatInfoModal) chatInfoModal.classList.remove('active');
         };
     }
 
