@@ -1585,4 +1585,14 @@
     });
     
     mobileOverlay.addEventListener('click', () => {
-        sidebar.classList.remove('open
+        sidebar.classList.remove('open');
+        mobileOverlay.classList.remove('open');
+    });
+    
+    // Запрос уведомлений
+    if ('Notification' in window && Notification.permission !== 'denied') {
+        Notification.requestPermission();
+    }
+</script>
+</body>
+</html>
