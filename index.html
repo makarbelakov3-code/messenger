@@ -1,1 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Мессенджер</title>
+    <link rel="stylesheet" href="/style.css">
+    <link rel="manifest" href="/manifest.json">
+</head>
+<body>
+    <div id="auth">
+        <h2>Мессенджер</h2>
+        <input type="text" id="username" placeholder="Имя">
+        <button id="login-btn">Войти</button>
+    </div>
 
+    <div id="chat" style="display:none">
+        <div id="sidebar">
+            <button id="notify">Уведомления</button>
+            <button id="logout">Выйти</button>
+            <button id="call">Звонок</button>
+        </div>
+        <div id="main">
+            <div id="messages"></div>
+            <div id="input-area">
+                <input type="text" id="text" placeholder="Сообщение">
+                <input type="file" id="file" style="display:none">
+                <button id="attach">📎</button>
+                <button id="send">Отправить</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="call-modal" style="display:none">
+        <div id="local"></div>
+        <div id="remote"></div>
+        <button id="end-call">Завершить</button>
+    </div>
+
+    <script src="/app.js"></script>
+</body>
+</html>
